@@ -37,14 +37,3 @@ plt.plot(_h, _manning(_h, *popt))
 b *= 2
 plt.plot(_h, _manning(_h, *popt))
 
-
-def _pl(h, k, P):
-    return k * h**P
-    
-popt, pcov = curve_fit( _pl, data['Stage'], data['Q'])
-
-def _lin(h, k):
-    return k * h
-
-popt, pcov = curve_fit( _lin, data['Stage'], data['Q'])
-
