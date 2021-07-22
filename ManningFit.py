@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.optimize import curve_fit
+from matplotlib import pyplot as plt
 
 data = pd.read_csv('MinnesotaJordan.tsv', sep='\t')
 
