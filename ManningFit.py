@@ -8,8 +8,6 @@ data = pd.read_csv('MinnesotaJordan.tsv', sep='\t')
 data['Q'] /= 3.28**3
 data['Stage'] /= 3.28
 
-
-#h_bank = 7. # meters
 b = 70. # meters
 S = 1E-4
 
@@ -30,11 +28,6 @@ def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank):
     _ob = (h > h_bank)
     h_fp = _ob * k_Qbank * _ob**(P_Qbank * _ob)
     return h_ch + h_fp + stage_depth_Q_offset
-
-#_h = np.arange(0.,10.)
-#_Q = _manning(_h, 1E2, 8/3., 0.)
-
-#plt.plot(_Q, _h, 'k.')
 
 popt, pcov = curve_fit( _manning, data['Stage'], data['Q'] )
 
