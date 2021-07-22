@@ -27,7 +27,7 @@ def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank):
     """
     h_ch = b * h**(5/3.) * S**(1/2.) / n
     _ob = (h > h_bank)
-    h_fp = _ob * k_Qbank * _ob**(P_Qbank * _ob)
+    h_fp = _ob * k_Qbank * (h-h_bank)**(P_Qbank * _ob)
     return h_ch + h_fp + stage_depth_Q_offset
 
 popt, pcov = curve_fit( _manning, data['Stage'], data['Q'] )
