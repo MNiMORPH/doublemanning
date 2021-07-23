@@ -41,6 +41,8 @@ flow_params = { "Manning's n": [popt[0]],
 
 outparams = pd.DataFrame.from_dict(flow_params)
 
+outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
+
 _h = np.arange(0.,10.1, 0.1)
 plt.plot(data['Stage'], data['Q'], 'k.')
 plt.plot(_h, _manning(_h, *popt))
