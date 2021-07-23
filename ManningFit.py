@@ -34,9 +34,16 @@ def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank):
 
 popt, pcov = curve_fit( _manning, data['Stage'], data['Q'] )
 
+flow_params = { "Manning's n": [popt[0]],
+                "Overbank flow coefficient": [popt[1]],
+                "Overbank flow power-law exponent": [popt[2]]
+              }
+
+outparams = pd.DataFrame.from_dict(flow_params)
+
 _h = np.arange(0.,10.1, 0.1)
 plt.plot(data['Stage'], data['Q'], 'k.')
-plt.plot(_h, _manning_fp_lin_hypsometry(_h, *popt))
+plt.plot(_h, _manning(_h, *popt))
 b *= 2
-plt.plot(_h, _manning_fp_lin_hypsometry(_h, *popt))
+plt.plot(_h, _manning(_h, *popt))
 
