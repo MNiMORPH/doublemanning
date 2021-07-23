@@ -1,9 +1,9 @@
-from depth_from_discharge import FlowDepth
+from depth_from_discharge import FlowDepthDoubleManning
 import pandas as pd
 
 flow_params = pd.read_csv('flow_params_MinnesotaJordan.csv')
 
-h = FlowDepth()
+h = FlowDepthDoubleManning()
 
 h.set_n(flow_params["Manning's n"])
 h.set_k(flow_params["Overbank flow coefficient"])
