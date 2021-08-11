@@ -1,18 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Aug  4 14:56:30 2021
+
+@author: campbell
+"""
+
+import argparse
 import pandas as pd
 import numpy as np
 from scipy.optimize import curve_fit
 from matplotlib import pyplot as plt
+from functools import partial
 
-data = pd.read_csv('MinnesotaJordan.tsv', sep='\t')
-
-# To metric
-data['Q'] /= 3.28**3
-data['Stage'] /= 3.28
-
-b = 70. # meters
-S = 1E-4
-
-def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank):
+def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth: float, slope: float):
     """
     Returns discharge given flow depth, 
     * h: Input. Stage.
@@ -27,12 +28,37 @@ def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank):
               also be solved here as a function of the inflection in the
               rating-curve data
     """
-    Q_ch = b * h**(5/3.) * S**(1/2.) / n
+    Q_ch = channelwidth * h**(5/3.) * slope**(1/2.) / n
     _ob = (h > h_bank)
     Q_fp = _ob * k_Qbank * (h-h_bank)**(P_Qbank * _ob)
     return Q_ch + Q_fp + stage_depth_Q_offset
 
-popt, pcov = curve_fit( _manning, data['Stage'], data['Q'] )
+def makemanning(channelwidth, slope):
+    return partial(_manning, channelwidth=channelwidth, slope=slope)
+
+
+parser = argparse.ArgumentParser(description='stores the name of your data file, the delimiter which separates your data, your channel width, and slope.')
+
+parser.add_argument('filename', type=str, help='specify the name of the file containing your data')
+parser.add_argument('delimiter', type=str, help='specify the type of delimiter your data is separated by')
+parser.add_argument('-c', '--channelwidth', type=float, default=70, help='specify the width of your channel')
+parser.add_argument('-s', '--slope', type=float, default=1E-4, help='specify your slope')
+args = parser.parse_args()
+if args.delimiter=='tab':
+    args.delimiter='\t'
+elif args.delimiter=='comma':
+    args.delimiter=','
+elif args.delimiter=='semicolon':
+    args.delimiter=';'
+
+data = pd.read_csv(args.filename, sep=args.delimiter)
+
+# To metric
+data['Q'] /= 3.28**3
+data['Stage'] /= 3.28
+
+# popt = optimization parameters, pcor = covariance matrix
+popt, pcov = curve_fit( makemanning(args.channelwidth, args.slope), data['Stage'], data['Q'] )
 
 flow_params = { "Manning's n": [popt[0]],
                 "Overbank flow coefficient": [popt[1]],
@@ -45,7 +71,6 @@ outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
 
 _h = np.arange(0.,10.1, 0.1)
 plt.plot(data['Stage'], data['Q'], 'k.')
-plt.plot(_h, _manning(_h, *popt))
-b *= 2
-plt.plot(_h, _manning(_h, *popt))
-
+plt.plot(_h, makemanning(args.channelwidth, args.slope)(_h, *popt))
+plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
+plt.show()
