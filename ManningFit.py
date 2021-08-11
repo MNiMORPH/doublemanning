@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug  4 14:56:30 2021
-
-@author: campbell
-"""
-
 import argparse
 import pandas as pd
 import numpy as np
