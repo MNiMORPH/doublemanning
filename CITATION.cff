@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Wickert"
+  given-names: "Andrew D."
+  orcid: "https://orcid.org/0000-0002-9545-3365"
+title: "rating-curve-2x-manning"
+version: 0.0.0
+doi: 10.5281/zenodo.7495274
+date-released: 2021-08-11
+url: "https://github.com/MNiMORPH/rating-curve-2x-manning"
