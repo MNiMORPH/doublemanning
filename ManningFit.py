@@ -5,7 +5,7 @@ from scipy.optimize import curve_fit
 from matplotlib import pyplot as plt
 from functools import partial
 
-def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth: float, slope: float):
+def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth: float, slope: float, use_Rh=True):
     """
     Returns discharge given flow depth, 
     * h: Input. Stage.
@@ -19,8 +19,14 @@ def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth:
     * h_bank: Streambank elevation. This might be known a priori, but it can
               also be solved here as a function of the inflection in the
               rating-curve data
+    * use R_h: Compute hydraulic radius for the channel and use this to compute
+               the parameters
     """
-    Q_ch = channelwidth * h**(5/3.) * slope**(1/2.) / n
+    if use_Rh:
+        Rh = h*channelwidth/(2*h+channelwidth)
+        Q_ch = channelwidth * Rh**(5/3.) * slope**(1/2.) / n
+    else:
+        Q_ch = channelwidth * h**(5/3.) * slope**(1/2.) / n
     _ob = (h > h_bank)
     Q_fp = _ob * k_Qbank * (h-h_bank)**(P_Qbank * _ob)
     return Q_ch + Q_fp + stage_depth_Q_offset
@@ -35,6 +41,7 @@ parser.add_argument('filename', type=str, help='specify the name of the file con
 parser.add_argument('delimiter', type=str, help='specify the type of delimiter your data is separated by')
 parser.add_argument('-c', '--channelwidth', type=float, default=70, help='specify the width of your channel')
 parser.add_argument('-s', '--slope', type=float, default=1E-4, help='specify your slope')
+parser.add_argument('-H', '--use_depth', action='store_true', default=True, help='Use flow depth instead of hydraulic radius.')
 args = parser.parse_args()
 if args.delimiter=='tab':
     args.delimiter='\t'
@@ -42,10 +49,11 @@ elif args.delimiter=='comma':
     args.delimiter=','
 elif args.delimiter=='semicolon':
     args.delimiter=';'
-
+    
 data = pd.read_csv(args.filename, sep=args.delimiter)
 
-# To metric
+# To metric -- because of USA units here
+print(data.columns)
 data['Q'] /= 3.28**3
 data['Stage'] /= 3.28
 
