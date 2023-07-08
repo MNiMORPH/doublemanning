@@ -31,8 +31,8 @@ def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth:
     Q_fp = _ob * k_Qbank * (h-h_bank)**(P_Qbank * _ob)
     return Q_ch + Q_fp + stage_depth_Q_offset
 
-def makemanning(channelwidth, slope):
-    return partial(_manning, channelwidth=channelwidth, slope=slope)
+def makemanning(channelwidth, slope, use_Rh):
+    return partial(_manning, channelwidth=channelwidth, slope=slope, use_Rh=use_Rh)
 
 
 parser = argparse.ArgumentParser(description='stores the name of your data file, the delimiter which separates your data, your channel width, and slope.')
@@ -41,7 +41,7 @@ parser.add_argument('filename', type=str, help='specify the name of the file con
 parser.add_argument('delimiter', type=str, help='specify the type of delimiter your data is separated by')
 parser.add_argument('-c', '--channelwidth', type=float, default=70, help='specify the width of your channel')
 parser.add_argument('-s', '--slope', type=float, default=1E-4, help='specify your slope')
-parser.add_argument('-H', '--use_depth', action='store_true', default=True, help='Use flow depth instead of hydraulic radius.')
+parser.add_argument('-H', '--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
 args = parser.parse_args()
 if args.delimiter=='tab':
     args.delimiter='\t'
@@ -54,11 +54,12 @@ data = pd.read_csv(args.filename, sep=args.delimiter)
 
 # To metric -- because of USA units here
 print(data.columns)
+print(args.use_depth)
 data['Q'] /= 3.28**3
 data['Stage'] /= 3.28
 
 # popt = optimization parameters, pcor = covariance matrix
-popt, pcov = curve_fit( makemanning(args.channelwidth, args.slope), data['Stage'], data['Q'] )
+popt, pcov = curve_fit( makemanning(args.channelwidth, args.slope, not args.use_depth), data['Stage'], data['Q'] )
 
 flow_params = { "Manning's n": [popt[0]],
                 "Overbank flow coefficient": [popt[1]],
@@ -71,6 +72,6 @@ outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
 
 _h = np.arange(0.,10.1, 0.1)
 plt.plot(data['Stage'].to_list(), data['Q'].to_list(), 'k.')
-plt.plot(_h, makemanning(args.channelwidth, args.slope)(_h, *popt))
-plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
+plt.plot(_h, makemanning(args.channelwidth, args.slope, not args.use_depth)(_h, *popt))
+#plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
 plt.show()
