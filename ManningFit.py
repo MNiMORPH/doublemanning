@@ -7,6 +7,7 @@ from scipy.optimize import curve_fit
 from matplotlib import pyplot as plt
 from functools import partial
 import warnings
+import sys
 
 def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth: float, slope: float, use_Rh=True):
     """
@@ -48,12 +49,23 @@ parser.add_argument('-s', '--slope', type=float, default=1E-4, help='specify you
 parser.add_argument('-H', '--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
 parser.add_argument('-u', '--us_units', action='store_true', default=False, help='Convert imported data from cfs and feet')
 parser.add_argument('-p', '--plot', default=False, action='store_true', help='Plot h-Q relationship')
-args = parser.parse_args()
+
+try:
+    args = parser.parse_args()
+except:
+    parser.print_help()
+    sys.exit(0)
     
 if args.configfile is not None:
     warnings.warn( "Configfile not yet configured. The irony." )
+    parser.print_help()
+    sys.exit(0)
 else:
-    data = pd.read_csv(args.datafile, sep=args.delimiter)
+    try:
+        data = pd.read_csv(args.datafile, sep=args.delimiter)
+    except:
+        parser.print_help()
+        sys.exit(0)
 
 if args.delimiter=='tab':
     args.delimiter='\t'
