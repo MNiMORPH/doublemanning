@@ -45,11 +45,11 @@ parser.add_argument('-f', '--configfile', type=str, help='file with two columns:
 parser.add_argument('-d', '--datafile', type=str, help='file with two columns: Q, stage')
 parser.add_argument('--delimiter', type=str, default='\t', help='specify the type of delimiter your data is separated by')
 parser.add_argument('-c', '--channel_width', type=float, default=None, help='river-channel width')
-parser.add_argument('-h', '--channel_depth', type=float, default=None, help='river-channel depth (not flow depth)')
+parser.add_argument('-H', '--channel_depth', type=float, default=None, help='river-channel depth (not flow depth)')
 parser.add_argument('-s', '--slope', type=float, default=1E-4, help='specify your slope')
-parser.add_argument('-H', '--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
-parser.add_argument('-u', '--us_units', action='store_true', default=False, help='Convert imported data from cfs and feet')
-parser.add_argument('-p', '--plot', default=False, action='store_true', help='Plot h-Q relationship')
+parser.add_argument('--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
+parser.add_argument('--us_units', action='store_true', default=False, help='Convert imported data from cfs and feet')
+parser.add_argument('--plot', default=False, action='store_true', help='Plot h-Q relationship')
 
 try:
     args = parser.parse_args()
