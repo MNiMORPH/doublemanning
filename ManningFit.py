@@ -35,8 +35,16 @@ def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth:
     Q_fp = _ob * k_Qbank * (h-h_bank)**(P_Qbank * _ob)
     return Q_ch + Q_fp + stage_depth_Q_offset
 
-def makemanning(channelwidth, slope, use_Rh):
-    return partial(_manning, channelwidth=channelwidth, slope=slope, use_Rh=use_Rh)
+def calib_manning(channeldepth, channelwidth, slope, use_Rh):
+    return partial( _manning, h_bank=channeldepth, channelwidth=channelwidth,
+                    slope=slope, use_Rh=use_Rh )
+
+def calib_manning_depth(channelwidth, slope, use_Rh):
+    return partial( _manning, channelwidth=channelwidth, slope=slope,
+                    use_Rh=use_Rh )
+
+def calib_manning_depth_width(slope, use_Rh):
+    return partial( _manning, slope=slope, use_Rh=use_Rh )
 
 
 parser = argparse.ArgumentParser(description='stores the name of your data file, the delimiter which separates your data, your channel width, and slope.')
@@ -83,20 +91,50 @@ if args.us_units:
     data['Stage'] /= 3.28
 
 # popt = optimization parameters, pcor = covariance matrix
-popt, pcov = curve_fit( makemanning(args.channel_width, args.slope, not args.use_depth), data['Stage'], data['Q'] )
+if args.channel_width is not None and args.channel_depth is not None:
+    popt, pcov = curve_fit( calib_manning(             args.channel_depth,
+                                                       args.channel_width,
+                                                       args.slope,
+                                                       not args.use_depth ),
+                            data['Stage'], data['Q'] )
+elif args.channel_width is not None:
+    popt, pcov = curve_fit( calib_manning_depth(       args.channel_width,
+                                                       args.slope,
+                                                       not args.use_depth ),
+                            data['Stage'], data['Q'] )
+elif args.channel_depth is not None:
+    sys.exit("Not set up to calibrate an unknown channel width with a known "+
+             "channel depth.")
+else:
+    popt, pcov = curve_fit( calib_manning_depth_width( args.slope,
+                                                       not args.use_depth ),
+                            data['Stage'], data['Q'] )
 
-flow_params = { "Manning's n": [popt[0]],
-                "Overbank flow coefficient": [popt[1]],
-                "Overbank flow power-law exponent": [popt[2]]
-              }
+#flow_params = { "Manning's n": [popt[0]],
+#                "Overbank flow coefficient": [popt[1]],
+#                "Overbank flow power-law exponent": [popt[2]],
+#                "Stage depth Q offset": [popt[3]]
+#                "Bank height": [popt[4]]
+#              }
+              
+print(popt)
 
-outparams = pd.DataFrame.from_dict(flow_params)
+#outparams = pd.DataFrame.from_dict(flow_params)
 
-outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
+#outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
 
 if args.plot:
     _h = np.arange(0.,10.1, 0.1) # Fixed for now
     plt.plot(data['Stage'].to_list(), data['Q'].to_list(), 'k.')
-    plt.plot(_h, makemanning(args.channel_width, args.slope, not args.use_depth)(_h, *popt))
+    if args.channel_width is not None and args.channel_depth is not None:
+        plt.plot(_h, calib_manning(args.channel_depth, args.channel_width, args.slope, not args.use_depth)(_h, *popt))
+    elif args.channel_width is not None:
+        plt.plot(_h, calib_manning_depth(args.channel_width, args.slope, not args.use_depth)(_h, *popt))
+    elif args.channel_depth is not None:
+        sys.exit("Not set up to calibrate an unknown channel width with a known "+
+                 "channel depth.")
+    else:
+        plt.plot(_h, calib_manning_depth_width(args.slope, not args.use_depth)(_h, *popt))
+        pass
     #plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
     plt.show()
