@@ -45,6 +45,7 @@ parser.add_argument('-f', '--configfile', type=str, help='file with two columns:
 parser.add_argument('-d', '--datafile', type=str, help='file with two columns: Q, stage')
 parser.add_argument('--delimiter', type=str, default='\t', help='specify the type of delimiter your data is separated by')
 parser.add_argument('-c', '--channelwidth', type=float, default=70, help='specify the width of your channel')
+parser.add_argument('-h', '--channel_depth', type=float, default=None, help='depth of your channel')
 parser.add_argument('-s', '--slope', type=float, default=1E-4, help='specify your slope')
 parser.add_argument('-H', '--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
 parser.add_argument('-u', '--us_units', action='store_true', default=False, help='Convert imported data from cfs and feet')
