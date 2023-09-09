@@ -43,8 +43,9 @@ parser.add_argument('-d', '--datafile', type=str, help='file with two columns: Q
 parser.add_argument('--delimiter', type=str, default='\t', help='specify the type of delimiter your data is separated by')
 parser.add_argument('-c', '--channelwidth', type=float, default=70, help='specify the width of your channel')
 parser.add_argument('-s', '--slope', type=float, default=1E-4, help='specify your slope')
-parser.add_argument('-p', '--plot', default=False, action='store_true', help='Plot h-Q relationship')
 parser.add_argument('-H', '--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
+parser.add_argument('-u', '--us_units', action='store_true', default=False, help='Convert imported data from cfs and feet')
+parser.add_argument('-p', '--plot', default=False, action='store_true', help='Plot h-Q relationship')
 args = parser.parse_args()
     
 if args.configfile is not None:
@@ -59,11 +60,12 @@ elif args.delimiter=='comma':
 elif args.delimiter=='semicolon':
     args.delimiter=';'
 
-# To metric -- because of USA units here
-print(data.columns)
-print(args.use_depth)
-data['Q'] /= 3.28**3
-data['Stage'] /= 3.28
+# To metric, if needed
+if args.us_units:
+    print(data.columns)
+    print(args.use_depth)
+    data['Q'] /= 3.28**3
+    data['Stage'] /= 3.28
 
 # popt = optimization parameters, pcor = covariance matrix
 popt, pcov = curve_fit( makemanning(args.channelwidth, args.slope, not args.use_depth), data['Stage'], data['Q'] )
