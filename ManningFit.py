@@ -44,8 +44,8 @@ parser = argparse.ArgumentParser(description='stores the name of your data file,
 parser.add_argument('-f', '--configfile', type=str, help='file with two columns: Q, stage')
 parser.add_argument('-d', '--datafile', type=str, help='file with two columns: Q, stage')
 parser.add_argument('--delimiter', type=str, default='\t', help='specify the type of delimiter your data is separated by')
-parser.add_argument('-c', '--channelwidth', type=float, default=70, help='specify the width of your channel')
-parser.add_argument('-h', '--channel_depth', type=float, default=None, help='depth of your channel')
+parser.add_argument('-c', '--channel_width', type=float, default=None, help='river-channel width')
+parser.add_argument('-h', '--channel_depth', type=float, default=None, help='river-channel depth (not flow depth)')
 parser.add_argument('-s', '--slope', type=float, default=1E-4, help='specify your slope')
 parser.add_argument('-H', '--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
 parser.add_argument('-u', '--us_units', action='store_true', default=False, help='Convert imported data from cfs and feet')
@@ -83,7 +83,7 @@ if args.us_units:
     data['Stage'] /= 3.28
 
 # popt = optimization parameters, pcor = covariance matrix
-popt, pcov = curve_fit( makemanning(args.channelwidth, args.slope, not args.use_depth), data['Stage'], data['Q'] )
+popt, pcov = curve_fit( makemanning(args.channel_width, args.slope, not args.use_depth), data['Stage'], data['Q'] )
 
 flow_params = { "Manning's n": [popt[0]],
                 "Overbank flow coefficient": [popt[1]],
@@ -97,6 +97,6 @@ outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
 if args.plot:
     _h = np.arange(0.,10.1, 0.1) # Fixed for now
     plt.plot(data['Stage'].to_list(), data['Q'].to_list(), 'k.')
-    plt.plot(_h, makemanning(args.channelwidth, args.slope, not args.use_depth)(_h, *popt))
+    plt.plot(_h, makemanning(args.channel_width, args.slope, not args.use_depth)(_h, *popt))
     #plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
     plt.show()
