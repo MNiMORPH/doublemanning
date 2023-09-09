@@ -4,6 +4,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 from matplotlib import pyplot as plt
 from functools import partial
+import warnings
 
 def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth: float, slope: float, use_Rh=True):
     """
@@ -37,20 +38,26 @@ def makemanning(channelwidth, slope, use_Rh):
 
 parser = argparse.ArgumentParser(description='stores the name of your data file, the delimiter which separates your data, your channel width, and slope.')
 
-parser.add_argument('filename', type=str, help='specify the name of the file containing your data')
-parser.add_argument('delimiter', type=str, help='specify the type of delimiter your data is separated by')
+parser.add_argument('-f', '--configfile', type=str, help='file with two columns: Q, stage')
+parser.add_argument('-d', '--datafile', type=str, help='file with two columns: Q, stage')
+parser.add_argument('--delimiter', type=str, default='\t', help='specify the type of delimiter your data is separated by')
 parser.add_argument('-c', '--channelwidth', type=float, default=70, help='specify the width of your channel')
 parser.add_argument('-s', '--slope', type=float, default=1E-4, help='specify your slope')
+parser.add_argument('-p', '--plot', default=False, action='store_true', help='Plot h-Q relationship')
 parser.add_argument('-H', '--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
 args = parser.parse_args()
+    
+if args.configfile is not None:
+    warnings.warn( "Configfile not yet configured. The irony." )
+else:
+    data = pd.read_csv(args.datafile, sep=args.delimiter)
+
 if args.delimiter=='tab':
     args.delimiter='\t'
 elif args.delimiter=='comma':
     args.delimiter=','
 elif args.delimiter=='semicolon':
     args.delimiter=';'
-    
-data = pd.read_csv(args.filename, sep=args.delimiter)
 
 # To metric -- because of USA units here
 print(data.columns)
@@ -70,8 +77,9 @@ outparams = pd.DataFrame.from_dict(flow_params)
 
 outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
 
-_h = np.arange(0.,10.1, 0.1)
-plt.plot(data['Stage'].to_list(), data['Q'].to_list(), 'k.')
-plt.plot(_h, makemanning(args.channelwidth, args.slope, not args.use_depth)(_h, *popt))
-#plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
-plt.show()
+if args.plot:
+    _h = np.arange(0.,10.1, 0.1) # Fixed for now
+    plt.plot(data['Stage'].to_list(), data['Q'].to_list(), 'k.')
+    plt.plot(_h, makemanning(args.channelwidth, args.slope, not args.use_depth)(_h, *popt))
+    #plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
+    plt.show()
