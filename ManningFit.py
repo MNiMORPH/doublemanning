@@ -1,5 +1,7 @@
 #! /usr/bin/python3
 
+# Written by A. Wickert
+
 import argparse
 import pandas as pd
 import numpy as np
@@ -8,6 +10,10 @@ from matplotlib import pyplot as plt
 from functools import partial
 import warnings
 import sys
+
+#############
+# FUNCTIONS #
+#############
 
 def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth: float, slope: float, use_Rh=True):
     """
@@ -46,6 +52,10 @@ def calib_manning_depth(channelwidth, slope, use_Rh):
 def calib_manning_depth_width(slope, use_Rh):
     return partial( _manning, slope=slope, use_Rh=use_Rh )
 
+
+##########
+# PARSER #
+##########
 
 parser = argparse.ArgumentParser(description='stores the name of your data file, the delimiter which separates your data, your channel width, and slope.')
 
@@ -129,14 +139,24 @@ flow_param_names = [ "Manning's n",
                      "Bank height",
                      "Channel width" ]
 
+_param_sd = np.diag(pcov)**2
 flow_params = {}
+flow_param_SDs = {}
 for i in range(4+ncalib):
     flow_params[flow_param_names[i]] = [popt[i]]
+    flow_param_SDs[flow_param_names[i]] = _param_sd[i]
+
+_param_sd = np.diag(pcov)**2
 
 if args.verbose:
     print( "" )
+    print( "PARAMETER VALUES" )
     for key in flow_params:
         print( key, ":", flow_params[key] )
+    print( "" )
+    print( "PARAMETER STANDARD DEVIATIONS" )
+    for key in flow_params:
+        print( key, ":", flow_param_SDs[key] )
 
 #outparams = pd.DataFrame.from_dict(flow_params)
 
@@ -161,3 +181,4 @@ if args.plot:
         pass
     #plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
     plt.show()
+
