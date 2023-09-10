@@ -92,32 +92,40 @@ if args.us_units:
 
 # popt = optimization parameters, pcor = covariance matrix
 if args.channel_width is not None and args.channel_depth is not None:
+    ncalib = 0 # Number of calibrated geometries: width, depth
     popt, pcov = curve_fit( calib_manning(             args.channel_depth,
                                                        args.channel_width,
                                                        args.slope,
                                                        not args.use_depth ),
                             data['Stage'], data['Q'] )
 elif args.channel_width is not None:
+    ncalib = 1
     popt, pcov = curve_fit( calib_manning_depth(       args.channel_width,
                                                        args.slope,
                                                        not args.use_depth ),
                             data['Stage'], data['Q'] )
 elif args.channel_depth is not None:
+    ncalib = 1
     sys.exit("Not set up to calibrate an unknown channel width with a known "+
              "channel depth.")
 else:
+    ncalib = 2
     popt, pcov = curve_fit( calib_manning_depth_width( args.slope,
                                                        not args.use_depth ),
                             data['Stage'], data['Q'] )
 
-#flow_params = { "Manning's n": [popt[0]],
-#                "Overbank flow coefficient": [popt[1]],
-#                "Overbank flow power-law exponent": [popt[2]],
-#                "Stage depth Q offset": [popt[3]]
-#                "Bank height": [popt[4]]
-#              }
-              
-print(popt)
+flow_param_names = [ "Manning's n",
+                     "Overbank flow coefficient",
+                     "Overbank flow power-law exponent",
+                     "Stage depth Q offset",
+                     "Bank height",
+                     "Channel width" ]
+
+flow_params = {}
+for i in range(4+ncalib):
+    flow_params[flow_param_names[i]] = [popt[i]]
+
+print(flow_params)
 
 #outparams = pd.DataFrame.from_dict(flow_params)
 
