@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from functools import partial
 import warnings
 import sys
+from sklearn.metrics import mean_squared_error
 
 #############
 # FUNCTIONS #
@@ -132,6 +133,36 @@ else:
                                                        not args.use_depth ),
                             data['Stage'], data['Q'] )
 
+################
+# COMPUTE RMSE #
+################
+
+if args.channel_width is not None and args.channel_depth is not None:
+    Q_predicted = calib_manning( args.channel_depth, args.channel_width,
+                                     args.slope, not args.use_depth) \
+                                     ( data['Stage'], *popt )
+elif args.channel_width is not None:
+    Q_predicted = calib_manning_depth( args.channel_width, args.slope,
+                                            not args.use_depth ) \
+                                            ( data['Stage'], *popt)
+elif args.channel_depth is not None:
+    sys.exit("Not set up to calibrate an unknown channel width with a known "+
+             "channel depth.")
+else:
+    Q_predicted = calib_manning_depth_width( args.slope,
+                                                 not args.use_depth ) \
+                                                 ( data['Stage'], *popt)
+print( Q_predicted - data['Q'] )
+
+# Maybe add this as a plotting option, eventually
+#plt.hist( Q_predicted - data['Q'] )
+#plt.show()
+
+rmse = mean_squared_error( data['Q'], Q_predicted, squared=False)
+
+if args.verbose:
+    print( rmse )
+
 flow_param_names = [ "Manning's n",
                      "Overbank flow coefficient",
                      "Overbank flow power-law exponent",
@@ -158,6 +189,7 @@ if args.verbose:
     for key in flow_params:
         print( key, ":", flow_param_SDs[key] )
 
+
 #outparams = pd.DataFrame.from_dict(flow_params)
 
 #outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
@@ -178,7 +210,6 @@ if args.plot:
                  "channel depth.")
     else:
         plt.plot(_h, calib_manning_depth_width(args.slope, not args.use_depth)(_h, *popt))
-        pass
     #plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
     plt.show()
 
