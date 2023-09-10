@@ -109,6 +109,10 @@ if args.use_depth:
         print( "Using flow depth instead of hydraulic radius" )
 
 
+###################################################
+# CURVE FIT: STAGE-DISCHARGE DATA WITH 2X MANNING #
+###################################################
+
 # popt = optimization parameters, pcor = covariance matrix
 if args.channel_width is not None and args.channel_depth is not None:
     ncalib = 0 # Number of calibrated geometries: width, depth
@@ -132,6 +136,7 @@ else:
     popt, pcov = curve_fit( calib_manning_depth_width( args.slope,
                                                        not args.use_depth ),
                             data['Stage'], data['Q'] )
+
 
 ################
 # COMPUTE RMSE #
@@ -162,6 +167,11 @@ rmse = mean_squared_error( data['Q'], Q_predicted, squared=False)
 
 if args.verbose:
     print( rmse )
+
+
+##########################
+# PARAMETER DICTIONARIES #
+##########################
 
 flow_param_names = [ "Manning's n",
                      "Overbank flow coefficient",
@@ -197,6 +207,11 @@ if args.verbose:
 # Add a trailing blank line if we've been verbose
 if args.verbose:
     print( "" )
+
+
+############
+# PLOTTING #
+############
 
 if args.plot:
     _h = np.arange(0.,10.1, 0.1) # Fixed for now
