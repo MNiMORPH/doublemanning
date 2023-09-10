@@ -58,6 +58,7 @@ parser.add_argument('-s', '--slope', type=float, default=None, help='channel slo
 parser.add_argument('--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
 parser.add_argument('--us_units', action='store_true', default=False, help='Convert imported data from cfs and feet')
 parser.add_argument('--plot', default=False, action='store_true', help='Plot h-Q relationship')
+parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Plot h-Q relationship')
 
 try:
     args = parser.parse_args()
@@ -85,10 +86,17 @@ elif args.delimiter=='semicolon':
 
 # To metric, if needed
 if args.us_units:
-    print(data.columns)
-    print(args.use_depth)
+    if args.verbose:
+        print( "" )
+        print("Data columns :", data.columns)
     data['Q'] /= 3.28**3
     data['Stage'] /= 3.28
+
+if args.use_depth:
+    if args.verbose:
+        print( "" )
+        print( "Using flow depth instead of hydraulic radius" )
+
 
 # popt = optimization parameters, pcor = covariance matrix
 if args.channel_width is not None and args.channel_depth is not None:
@@ -125,11 +133,18 @@ flow_params = {}
 for i in range(4+ncalib):
     flow_params[flow_param_names[i]] = [popt[i]]
 
-print(flow_params)
+if args.verbose:
+    print( "" )
+    for key in flow_params:
+        print( key, ":", flow_params[key] )
 
 #outparams = pd.DataFrame.from_dict(flow_params)
 
 #outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
+
+# Add a trailing blank line if we've been verbose
+if args.verbose:
+    print( "" )
 
 if args.plot:
     _h = np.arange(0.,10.1, 0.1) # Fixed for now
