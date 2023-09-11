@@ -78,11 +78,19 @@ def main():
     parser.add_argument('--plot', default=False, action='store_true', help='Plot h-Q relationship')
     parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Plot h-Q relationship')
 
+    """
+    print("HI!")
+    args = parser.parse_args()
+    print(args.outfile)
+    print(args.help)
+
     try:
         args = parser.parse_args()
     except:
         parser.print_help()
+        print ("HEY!")
         sys.exit(0)
+        
         
     if args.configfile is not None:
         warnings.warn( "Configfile not yet configured. The irony." )
@@ -94,6 +102,23 @@ def main():
         except:
             parser.print_help()
             sys.exit(0)
+    """
+    
+    # Parse args if anything is passed.
+    # If nothing is passed, then print help and exit.
+    args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
+    
+    if args.configfile is not None:
+        warnings.warn( "\n\nConfigfile not yet configured. The irony.\n" )
+        #parser.print_help()
+        sys.exit(0)
+    else:
+        try:
+            data = pd.read_csv(args.datafile, sep=args.delimiter)
+        except:
+            print("\nCould not read from", args.datafile, "\n")
+            #parser.print_help()
+            sys.exit(0)    
 
     if args.delimiter=='tab':
         args.delimiter='\t'
