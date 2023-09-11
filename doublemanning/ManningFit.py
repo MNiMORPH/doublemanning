@@ -16,7 +16,8 @@ from sklearn.metrics import mean_squared_error
 # FUNCTIONS #
 #############
 
-def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank, channelwidth: float, slope: float, use_Rh=True):
+def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank,
+              channelwidth: float, slope: float, use_Rh=True):
     """
     Returns discharge given flow depth, 
     * h: Input. Stage.
