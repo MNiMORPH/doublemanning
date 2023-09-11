@@ -101,8 +101,12 @@ def main():
     args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
     
     if args.configfile is not None:
-        with open(args.configfile, "r") as yamlfile:
-            yconf = yaml.load(yamlfile, Loader=yaml.FullLoader)
+        try:
+            with open(args.configfile, "r") as yamlfile:
+                yconf = yaml.load(yamlfile, Loader=yaml.FullLoader)
+        except:
+            print("\nCould not read from", args.configfile, "\n")
+            sys.exit(2)
 
         # Data
         datafile = yconf['data']['filename']
@@ -161,7 +165,7 @@ def main():
         data = pd.read_csv(datafile, sep=delimiter)
     except:
         print("\nCould not read from", datafile, "\n")
-        sys.exit(0)    
+        sys.exit(2)    
 
     # To metric, if needed
     if us_units:
