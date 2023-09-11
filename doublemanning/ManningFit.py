@@ -64,7 +64,12 @@ def main():
     # PARSER #
     ##########
 
-    parser = argparse.ArgumentParser(description='Pass channel and flow characteristics to obtain a "Double Manning" -- Manning\'s Equation (channel) + generic power-law (floodplain) stage--discharge relationship.')
+    parser = argparse.ArgumentParser( description=
+              'Pass channel and flow characteristics to obtain a '+
+              '"Double Manning" -- Manning\'s Equation (channel) '+
+              ' + generic power-law (floodplain) stage--discharge '+
+              'relationship.'
+              )
 
     parser.add_argument('-f', '--configfile', type=str,
                             help='configuration YAML file name')
