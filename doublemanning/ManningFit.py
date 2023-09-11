@@ -64,7 +64,7 @@ def main():
     # PARSER #
     ##########
 
-    parser = argparse.ArgumentParser(description='stores the name of your data file, the delimiter which separates your data, your channel width, and slope.')
+    parser = argparse.ArgumentParser(description='Pass channel and flow characteristics to obtain a "Double Manning" -- Manning\'s Equation (channel) + generic power-law (floodplain) stage--discharge relationship.')
 
     parser.add_argument('-f', '--configfile', type=str, help='configuration YAML file name')
     parser.add_argument('-d', '--datafile', type=str, help='file with two columns: Q, stage')
@@ -72,6 +72,7 @@ def main():
     parser.add_argument('-c', '--channel_width', type=float, default=None, help='river-channel width')
     parser.add_argument('-H', '--channel_depth', type=float, default=None, help='river-channel depth (not flow depth)')
     parser.add_argument('-s', '--slope', type=float, default=None, help='channel slope')
+    parser.add_argument('-o', '--outfile', default=None, help='Stores fit parameters.')
     parser.add_argument('--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
     parser.add_argument('--us_units', action='store_true', default=False, help='Convert imported data from cfs and feet')
     parser.add_argument('--plot', default=False, action='store_true', help='Plot h-Q relationship')
@@ -172,7 +173,7 @@ def main():
     rmse = mean_squared_error( data['Q'], Q_predicted, squared=False)
 
     if args.verbose:
-        print( rmse )
+        print( "Fit RMSE [m^3/s]", ":", rmse )
 
 
     ##########################
@@ -182,16 +183,17 @@ def main():
     flow_param_names = [ "Manning's n",
                          "Overbank flow coefficient",
                          "Overbank flow power-law exponent",
-                         "Stage depth Q offset",
-                         "Bank height",
-                         "Channel width" ]
+                         "Q at Stage = 0 [m^3/s]",
+                         "Bank height [m]",
+                         "Channel width [m]" ]
 
     _param_sd = np.diag(pcov)**2
     flow_params = {}
     flow_param_SDs = {}
     for i in range(4+ncalib):
         flow_params[flow_param_names[i]] = [popt[i]]
-        flow_param_SDs[flow_param_names[i]] = _param_sd[i]
+        flow_param_SDs["SD: "+flow_param_names[i]] = _param_sd[i]
+    rmse_dict = { "Fit RMSE [m^3/s]": rmse }
 
     _param_sd = np.diag(pcov)**2
 
@@ -202,13 +204,13 @@ def main():
             print( key, ":", flow_params[key] )
         print( "" )
         print( "PARAMETER STANDARD DEVIATIONS" )
-        for key in flow_params:
+        for key in flow_param_SDs:
             print( key, ":", flow_param_SDs[key] )
 
-
-    #outparams = pd.DataFrame.from_dict(flow_params)
-
-    #outparams.to_csv('flow_params_MinnesotaJordan.csv', index=False)
+    if args.outfile is not None:
+        outarray = {**flow_params, **flow_param_SDs, **rmse_dict}
+        outparams = pd.DataFrame.from_dict(outarray)
+        outparams.to_csv(args.outfile, index=False)
 
     # Add a trailing blank line if we've been verbose
     if args.verbose:
