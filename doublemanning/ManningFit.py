@@ -76,7 +76,7 @@ def main():
     parser.add_argument('-y', '--configfile', type=str,
                             help='YAML file from which all inputs are read.')
     parser.add_argument('-d', '--datafile', type=str,
-                            help='file with two columns: Q, stage')
+                            help='file with two columns: Discharge, Stage')
     parser.add_argument('--delimiter', type=str, default='\t',
                             help='"tab", "comma", or "semicolon"')
     parser.add_argument('-b', '--channel_width', type=float, default=None,
@@ -92,9 +92,9 @@ def main():
     parser.add_argument('--us_units', action='store_true', default=False,
                             help='Convert imported data from cfs and feet')
     parser.add_argument('--plot', default=False, action='store_true',
-                            help='Plot h-Q relationship')
+                            help='Plot stage-discharge relationship')
     parser.add_argument('-v', '--verbose', default=False, action='store_true',
-                            help='Plot h-Q relationship')
+                            help='Plot stage-discharge relationship')
 
     # Parse args if anything is passed.
     # If nothing is passed, then print help and exit.
@@ -168,7 +168,7 @@ def main():
         if verboseflag:
             print( "" )
             print("Data columns :", data.columns)
-        data['Q'] /= 3.28**3
+        data['Discharge'] /= 3.28**3
         data['Stage'] /= 3.28
 
 
@@ -194,13 +194,13 @@ def main():
                                                            channel_width,
                                                            slope,
                                                            not use_depth ),
-                                data['Stage'], data['Q'] )
+                                data['Stage'], data['Discharge'] )
     elif channel_width is not None:
         ncalib = 1
         popt, pcov = curve_fit( calib_manning_depth(       channel_width,
                                                            slope,
                                                            not use_depth ),
-                                data['Stage'], data['Q'] )
+                                data['Stage'], data['Discharge'] )
     elif channel_depth is not None:
         ncalib = 1
         sys.exit("Not set up to calibrate an unknown channel width with a known "+
@@ -209,7 +209,7 @@ def main():
         ncalib = 2
         popt, pcov = curve_fit( calib_manning_depth_width( slope,
                                                            not use_depth ),
-                                data['Stage'], data['Q'] )
+                                data['Stage'], data['Discharge'] )
 
 
     ################
@@ -231,13 +231,13 @@ def main():
         Q_predicted = calib_manning_depth_width( slope,
                                                      not use_depth ) \
                                                      ( data['Stage'], *popt)
-    print( Q_predicted - data['Q'] )
+    print( Q_predicted - data['Discharge'] )
 
     # Maybe add this as a plotting option, eventually
-    #plt.hist( Q_predicted - data['Q'] )
+    #plt.hist( Q_predicted - data['Discharge'] )
     #plt.show()
 
-    rmse = mean_squared_error( data['Q'], Q_predicted, squared=False)
+    rmse = mean_squared_error( data['Discharge'], Q_predicted, squared=False)
 
     if verboseflag:
         print( "Fit RMSE [m^3/s]", ":", rmse )
@@ -290,7 +290,7 @@ def main():
 
     if plotflag:
         _h = np.arange(0.,10.1, 0.1) # Fixed for now
-        plt.plot(data['Stage'].to_list(), data['Q'].to_list(), 'k.')
+        plt.plot(data['Stage'].to_list(), data['Discharge'].to_list(), 'k.')
         if channel_width is not None and channel_depth is not None:
             plt.plot(_h, calib_manning(channel_depth, channel_width, slope, not use_depth)(_h, *popt))
         elif channel_width is not None:
