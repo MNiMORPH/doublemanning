@@ -11,6 +11,7 @@ from functools import partial
 import warnings
 import sys
 from sklearn.metrics import mean_squared_error
+import yaml
 
 #############
 # FUNCTIONS #
@@ -101,7 +102,33 @@ def main():
     
     if args.configfile is not None:
         warnings.warn( "\n\nConfigfile not yet configured. The irony.\n" )
-        sys.exit(0)
+        #sys.exit(0)
+        
+        with open("config.yml", "r") as yamlfile:
+            yconf = yaml.load(yamlfile, Loader=yaml.FullLoader)
+
+        # Data
+        datafile = yconf['data']['filename']
+        delimiter = yconf['data']['delimiter']
+        us_units = yconf['data']['us-units']
+        
+        # Channel
+        # None-type --> Include as free variable rather than specifying
+        try:
+            width = yconf['channel']['width']
+        except:
+            width = None
+        try:
+            depth = yconf['channel']['depth']
+        except:
+            depth = None
+        slope = yconf['channel']['slope']
+        
+        # Output
+        outfile = yconf['output']['outfile']
+        plotflag = yconf['output']['plot']
+        verboseflag = yconf['output']['verbose']
+
     else:
         try:
             data = pd.read_csv(args.datafile, sep=args.delimiter)
@@ -109,12 +136,15 @@ def main():
             print("\nCould not read from", args.datafile, "\n")
             sys.exit(0)    
 
-    if args.delimiter=='tab':
-        args.delimiter='\t'
-    elif args.delimiter=='comma':
-        args.delimiter=','
-    elif args.delimiter=='semicolon':
-        args.delimiter=';'
+    # Change delimiter string into its appropriate character
+    delimiter = args.delimiter
+    if delimiter=='tab':
+        delimiter='\t'
+    elif delimiter=='comma':
+        delimiter=','
+    elif delimiter=='semicolon':
+        delimiter=';'
+    args.delimiter = delimiter
 
     # To metric, if needed
     if args.us_units:
