@@ -78,7 +78,7 @@ def main():
                             help='file with two columns: Q, stage')
     parser.add_argument('--delimiter', type=str, default='\t',
                             help='"tab", "comma", or "semicolon"')
-    parser.add_argument('-c', '--channel_width', type=float, default=None,
+    parser.add_argument('-b', '--channel_width', type=float, default=None,
                             help='river-channel width')
     parser.add_argument('-H', '--channel_depth', type=float, default=None,
                             help='river-channel depth (not flow depth)')
