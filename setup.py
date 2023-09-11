@@ -28,6 +28,11 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Hydrology",
         "Intended Audience :: Science/Research",
     ],
+    entry_points = {
+        'console_scripts': [
+            'doublemanning = doublemanning.cli:cli'
+        ],
+    },
     keywords='fluvial geomorphology sediment transport landscape evolution',
     project_urls={
         'Model page': 'https://csdms.colorado.edu/wiki/Model:GRLP',
