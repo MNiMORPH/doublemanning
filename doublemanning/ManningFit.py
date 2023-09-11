@@ -101,7 +101,7 @@ def main():
     args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
     
     if args.configfile is not None:
-        with open("config.yml", "r") as yamlfile:
+        with open(args.configfile, "r") as yamlfile:
             yconf = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
         # Data
