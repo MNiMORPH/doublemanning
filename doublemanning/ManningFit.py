@@ -66,17 +66,28 @@ def main():
 
     parser = argparse.ArgumentParser(description='Pass channel and flow characteristics to obtain a "Double Manning" -- Manning\'s Equation (channel) + generic power-law (floodplain) stage--discharge relationship.')
 
-    parser.add_argument('-f', '--configfile', type=str, help='configuration YAML file name')
-    parser.add_argument('-d', '--datafile', type=str, help='file with two columns: Q, stage')
-    parser.add_argument('--delimiter', type=str, default='\t', help='"tab", "comma", or "semicolon"')
-    parser.add_argument('-c', '--channel_width', type=float, default=None, help='river-channel width')
-    parser.add_argument('-H', '--channel_depth', type=float, default=None, help='river-channel depth (not flow depth)')
-    parser.add_argument('-s', '--slope', type=float, default=None, help='channel slope')
-    parser.add_argument('-o', '--outfile', default=None, help='Stores fit parameters.')
-    parser.add_argument('--use_depth', action='store_true', default=False, help='Use flow depth instead of hydraulic radius.')
-    parser.add_argument('--us_units', action='store_true', default=False, help='Convert imported data from cfs and feet')
-    parser.add_argument('--plot', default=False, action='store_true', help='Plot h-Q relationship')
-    parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Plot h-Q relationship')
+    parser.add_argument('-f', '--configfile', type=str,
+                            help='configuration YAML file name')
+    parser.add_argument('-d', '--datafile', type=str,
+                            help='file with two columns: Q, stage')
+    parser.add_argument('--delimiter', type=str, default='\t',
+                            help='"tab", "comma", or "semicolon"')
+    parser.add_argument('-c', '--channel_width', type=float, default=None,
+                            help='river-channel width')
+    parser.add_argument('-H', '--channel_depth', type=float, default=None,
+                            help='river-channel depth (not flow depth)')
+    parser.add_argument('-s', '--slope', type=float, default=None,
+                            help='channel slope')
+    parser.add_argument('-o', '--outfile', default=None,
+                            help='Stores fit parameters.')
+    parser.add_argument('--use_depth', action='store_true', default=False,
+                            help='Use flow depth instead of hydraulic radius.')
+    parser.add_argument('--us_units', action='store_true', default=False,
+                            help='Convert imported data from cfs and feet')
+    parser.add_argument('--plot', default=False, action='store_true',
+                            help='Plot h-Q relationship')
+    parser.add_argument('-v', '--verbose', default=False, action='store_true',
+                            help='Plot h-Q relationship')
 
     # Parse args if anything is passed.
     # If nothing is passed, then print help and exit.
