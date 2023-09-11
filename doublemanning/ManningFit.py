@@ -74,7 +74,7 @@ def main():
               )
 
     parser.add_argument('-f', '--configfile', type=str,
-                            help='configuration YAML file name')
+                            help='YAML file from which all inputs are read.')
     parser.add_argument('-d', '--datafile', type=str,
                             help='file with two columns: Q, stage')
     parser.add_argument('--delimiter', type=str, default='\t',
@@ -115,47 +115,73 @@ def main():
         # Channel
         # None-type --> Include as free variable rather than specifying
         try:
-            width = yconf['channel']['width']
+            channel_width = yconf['channel']['width']
         except:
-            width = None
+            channel_width = None
         try:
-            depth = yconf['channel']['depth']
+            channel_depth = yconf['channel']['depth']
         except:
-            depth = None
+            channel_depth = None
         slope = yconf['channel']['slope']
+        use_depth = yconf['channel']['use_depth']
         
         # Output
         outfile = yconf['output']['outfile']
         plotflag = yconf['output']['plot']
         verboseflag = yconf['output']['verbose']
-
     else:
-        try:
-            data = pd.read_csv(args.datafile, sep=args.delimiter)
-        except:
-            print("\nCould not read from", args.datafile, "\n")
-            sys.exit(0)    
+        # Data
+        datafile = args.datafile
+        delimiter = args.delimiter
+        us_units = args.us_units
+        
+        # Channel
+        channel_width = args.channel_width
+        channel_depth = args.channel_depth
+        slope = args.slope
+        use_depth = args.use_depth
+        
+        # Output
+        outfile = args.outfile
+        plotflag = args.plot
+        verboseflag = args.verbose
+
+
+    ###############
+    # IMPORT DATA #
+    ###############
 
     # Change delimiter string into its appropriate character
-    delimiter = args.delimiter
     if delimiter=='tab':
         delimiter='\t'
     elif delimiter=='comma':
         delimiter=','
     elif delimiter=='semicolon':
         delimiter=';'
-    args.delimiter = delimiter
+
+    # Import data
+    try:
+        data = pd.read_csv(datafile, sep=delimiter)
+    except:
+        print("\nCould not read from", datafile, "\n")
+        sys.exit(0)    
 
     # To metric, if needed
-    if args.us_units:
-        if args.verbose:
+    if us_units:
+        if verboseflag:
             print( "" )
             print("Data columns :", data.columns)
         data['Q'] /= 3.28**3
         data['Stage'] /= 3.28
 
-    if args.use_depth:
-        if args.verbose:
+
+
+    ##############################
+    # DEPTH OR HYDRAULIC RADIUS? #
+    ##############################
+
+    if use_depth:
+        if verboseflag:
             print( "" )
             print( "Using flow depth instead of hydraulic radius" )
 
@@ -165,27 +191,27 @@ def main():
     ###################################################
 
     # popt = optimization parameters, pcor = covariance matrix
-    if args.channel_width is not None and args.channel_depth is not None:
+    if channel_width is not None and channel_depth is not None:
         ncalib = 0 # Number of calibrated geometries: width, depth
-        popt, pcov = curve_fit( calib_manning(             args.channel_depth,
-                                                           args.channel_width,
-                                                           args.slope,
-                                                           not args.use_depth ),
+        popt, pcov = curve_fit( calib_manning(             channel_depth,
+                                                           channel_width,
+                                                           slope,
+                                                           not use_depth ),
                                 data['Stage'], data['Q'] )
-    elif args.channel_width is not None:
+    elif channel_width is not None:
         ncalib = 1
-        popt, pcov = curve_fit( calib_manning_depth(       args.channel_width,
-                                                           args.slope,
-                                                           not args.use_depth ),
+        popt, pcov = curve_fit( calib_manning_depth(       channel_width,
+                                                           slope,
+                                                           not use_depth ),
                                 data['Stage'], data['Q'] )
-    elif args.channel_depth is not None:
+    elif channel_depth is not None:
         ncalib = 1
         sys.exit("Not set up to calibrate an unknown channel width with a known "+
                  "channel depth.")
     else:
         ncalib = 2
-        popt, pcov = curve_fit( calib_manning_depth_width( args.slope,
-                                                           not args.use_depth ),
+        popt, pcov = curve_fit( calib_manning_depth_width( slope,
+                                                           not use_depth ),
                                 data['Stage'], data['Q'] )
 
 
@@ -193,20 +219,20 @@ def main():
     # COMPUTE RMSE #
     ################
 
-    if args.channel_width is not None and args.channel_depth is not None:
-        Q_predicted = calib_manning( args.channel_depth, args.channel_width,
-                                         args.slope, not args.use_depth) \
+    if channel_width is not None and channel_depth is not None:
+        Q_predicted = calib_manning( channel_depth, channel_width,
+                                         slope, not use_depth) \
                                          ( data['Stage'], *popt )
-    elif args.channel_width is not None:
-        Q_predicted = calib_manning_depth( args.channel_width, args.slope,
-                                                not args.use_depth ) \
+    elif channel_width is not None:
+        Q_predicted = calib_manning_depth( channel_width, slope,
+                                                not use_depth ) \
                                                 ( data['Stage'], *popt)
-    elif args.channel_depth is not None:
+    elif channel_depth is not None:
         sys.exit("Not set up to calibrate an unknown channel width with a known "+
                  "channel depth.")
     else:
-        Q_predicted = calib_manning_depth_width( args.slope,
-                                                     not args.use_depth ) \
+        Q_predicted = calib_manning_depth_width( slope,
+                                                     not use_depth ) \
                                                      ( data['Stage'], *popt)
     print( Q_predicted - data['Q'] )
 
@@ -216,7 +242,7 @@ def main():
 
     rmse = mean_squared_error( data['Q'], Q_predicted, squared=False)
 
-    if args.verbose:
+    if verboseflag:
         print( "Fit RMSE [m^3/s]", ":", rmse )
 
 
@@ -241,7 +267,7 @@ def main():
 
     _param_sd = np.diag(pcov)**2
 
-    if args.verbose:
+    if verboseflag:
         print( "" )
         print( "PARAMETER VALUES" )
         for key in flow_params:
@@ -251,13 +277,13 @@ def main():
         for key in flow_param_SDs:
             print( key, ":", flow_param_SDs[key] )
 
-    if args.outfile is not None:
+    if outfile is not None:
         outarray = {**flow_params, **flow_param_SDs, **rmse_dict}
         outparams = pd.DataFrame.from_dict(outarray)
-        outparams.to_csv(args.outfile, index=False)
+        outparams.to_csv(outfile, index=False)
 
     # Add a trailing blank line if we've been verbose
-    if args.verbose:
+    if verboseflag:
         print( "" )
 
 
@@ -265,19 +291,19 @@ def main():
     # PLOTTING #
     ############
 
-    if args.plot:
+    if plotflag:
         _h = np.arange(0.,10.1, 0.1) # Fixed for now
         plt.plot(data['Stage'].to_list(), data['Q'].to_list(), 'k.')
-        if args.channel_width is not None and args.channel_depth is not None:
-            plt.plot(_h, calib_manning(args.channel_depth, args.channel_width, args.slope, not args.use_depth)(_h, *popt))
-        elif args.channel_width is not None:
-            plt.plot(_h, calib_manning_depth(args.channel_width, args.slope, not args.use_depth)(_h, *popt))
-        elif args.channel_depth is not None:
+        if channel_width is not None and channel_depth is not None:
+            plt.plot(_h, calib_manning(channel_depth, channel_width, slope, not use_depth)(_h, *popt))
+        elif channel_width is not None:
+            plt.plot(_h, calib_manning_depth(channel_width, slope, not use_depth)(_h, *popt))
+        elif channel_depth is not None:
             sys.exit("Not set up to calibrate an unknown channel width with a known "+
                      "channel depth.")
         else:
-            plt.plot(_h, calib_manning_depth_width(args.slope, not args.use_depth)(_h, *popt))
-        #plt.plot(_h, makemanning(2*args.channelwidth, args.slope)(_h, *popt))
+            plt.plot(_h, calib_manning_depth_width(slope, not use_depth)(_h, *popt))
+        #plt.plot(_h, makemanning(2*args.channelwidth, slope)(_h, *popt))
         plt.show()
 
 
