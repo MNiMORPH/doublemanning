@@ -73,7 +73,7 @@ def main():
               'relationship.'
               )
 
-    parser.add_argument('-f', '--configfile', type=str,
+    parser.add_argument('-y', '--configfile', type=str,
                             help='YAML file from which all inputs are read.')
     parser.add_argument('-d', '--datafile', type=str,
                             help='file with two columns: Q, stage')
