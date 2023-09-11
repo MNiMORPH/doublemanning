@@ -101,9 +101,6 @@ def main():
     args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
     
     if args.configfile is not None:
-        warnings.warn( "\n\nConfigfile not yet configured. The irony.\n" )
-        #sys.exit(0)
-        
         with open("config.yml", "r") as yamlfile:
             yconf = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
@@ -115,14 +112,14 @@ def main():
         # Channel
         # None-type --> Include as free variable rather than specifying
         try:
-            channel_width = yconf['channel']['width']
+            channel_width = float(yconf['channel']['width'])
         except:
             channel_width = None
         try:
-            channel_depth = yconf['channel']['depth']
+            channel_depth = float(yconf['channel']['depth'])
         except:
             channel_depth = None
-        slope = yconf['channel']['slope']
+        slope = float(yconf['channel']['slope'])
         use_depth = yconf['channel']['use_depth']
         
         # Output
