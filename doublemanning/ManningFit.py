@@ -146,6 +146,9 @@ def main():
         outfile = args.outfile
         plotflag = args.plot
         verboseflag = args.verbose
+        
+        # Indicate that there is no YAML file
+        yconf = None
 
 
     ###############
@@ -176,7 +179,6 @@ def main():
         data['Stage'] /= 3.28
 
 
-
     ##############################
     # DEPTH OR HYDRAULIC RADIUS? #
     ##############################
@@ -198,6 +200,37 @@ def main():
     Q_offset_bounds = (-np.inf, np.inf)
     channel_depth_bounds = (0, np.inf)
     channel_width_bounds = (0, np.inf)
+    
+    # User-set bounds
+    # Possible only via YAML file -- too much to really do with simple
+    # CLI parsing
+    if yconf is not None:
+        try:
+            mannings_n_bounds = yconf['bounds']['mannings_n_bounds']
+        except:
+            pass
+        try:
+            floodplain_coeff_bounds = \
+                yconf['bounds']['floodplain_coeff_bounds']
+        except:
+            pass
+        try:
+            floodplain_exponent_bounds = \
+                yconf['bounds']['floodplain_exponent_bounds']
+        except:
+            pass
+        try:
+            Q_offset_bounds = yconf['bounds']['Q_offset_bounds']
+        except:
+            pass
+        try:
+            channel_depth_bounds = yconf['bounds']['channel_depth_bounds']
+        except:
+            pass
+        try:
+            channel_width_bounds = yconf['bounds']['channel_width_bounds']
+        except:
+            pass
     
     # Combine these together
     bounds = [ mannings_n_bounds,
