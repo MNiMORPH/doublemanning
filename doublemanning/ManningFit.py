@@ -5,13 +5,14 @@
 import argparse
 import pandas as pd
 import numpy as np
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, fsolve
 from matplotlib import pyplot as plt
 from functools import partial
 import warnings
 import sys
 from sklearn.metrics import mean_squared_error
 import yaml
+
 
 #############
 # FUNCTIONS #
@@ -60,19 +61,24 @@ def flow_depth_from_Manning_discharge( h, n, k_Qbank, P_Qbank,
                                        channelwidth: float, slope: float,
                                        use_Rh=True ):
     """
-    Use this to find the computed flow depth at which Q=0.
+    Use this to compute the flow depth at which Q=0.
     If nonzero, then this gives an additional correction from
     stage to flow depth.
     """
     # Does the flow go overbank?
     ob = h > h_bank
     if use_Rh:
-        R_h = h*self.b / (2*h + self.b)
+        _r = h * channelwidth / (2*h + channelwidth)
     else:
         _r = h
-    # Return the flow depth at a given discharge
-    return self.b/self.n * _r**(5/3.) * self.S**0.5 \
-              + ob*self.k*(h-self.h_bank)**(ob*self.P) - self.Q
+    # Return the flow depth at the given discharge
+    # In this case, our variable convention strongly suggests
+    # that it is the discharge at which stage = 0
+    # (It is used here, iteratively, to bring this --> 0, s.t.
+    # the final stage = flow depth, in a rectangular channel parameterization.)
+    return channelwidth/n * _r**(5/3.) * slope**0.5 \
+              + ob * k_Qbank * (h - h_bank)**(ob * P_Qbank) \
+              - stage_depth_Q_offset
 
 ################
 # MAIN PROGRAM #
@@ -105,6 +111,8 @@ def main():
                             help='stage at depth = 0')
     parser.add_argument('-s', '--slope', type=float, default=None,
                             help='channel slope')
+    parser.add_argument('-i', '--niter', type=int, default=1,
+                            help='Number of iterations to refine stage offset')
     parser.add_argument('-o', '--outfile', default=None,
                             help='Stores fit parameters.')
     parser.add_argument('--use_depth', action='store_true', default=False,
@@ -145,6 +153,7 @@ def main():
             channel_depth = None
         stage_offset = float(yconf['channel']['stage_offset'])
         slope = float(yconf['channel']['slope'])
+        niter = int(yconf['channel']['niter'])
         use_depth = yconf['channel']['use_depth']
         
         # Output
@@ -160,8 +169,9 @@ def main():
         # Channel
         channel_width = args.channel_width
         channel_depth = args.channel_depth
-        stage_offset = float(yconf['channel']['stage_offset'])
+        stage_offset = args.stage_depth_offset
         slope = args.slope
+        niter = args.niter
         use_depth = args.use_depth
         
         # Output
@@ -262,47 +272,93 @@ def main():
                channel_depth_bounds,
                channel_width_bounds ]
                
-    # Compute depth
-    flow_depth = data['Stage'] - stage_offset
+    # ITERATE FOR STAGE--DEPTH OFFSET CONVERGENCE
+    
+    while niter > 0:
+        # Compute depth
+        flow_depth = data['Stage'] - stage_offset
 
-    # popt = optimization parameters, pcor = covariance matrix
-    if channel_width is not None and channel_depth is not None:
-        ncalib = 0 # Number of calibrated geometries: width, depth
-        # Bounds for curve fit
-        bounds = np.array(bounds).transpose()
-        bounds = (bounds[0][:4+ncalib], bounds[1][:4+ncalib])
-        # Create the curve fit
-        popt, pcov = curve_fit( calib_manning(             channel_depth,
-                                                           channel_width,
-                                                           slope,
-                                                           not use_depth ),
-                                flow_depth, data['Discharge'],
-                                bounds=bounds )
-    elif channel_width is not None:
-        ncalib = 1
-        # Bounds for curve fit
-        bounds = np.array(bounds).transpose()
-        bounds = (bounds[0][:4+ncalib], bounds[1][:4+ncalib])
-        # Create the curve fit
-        popt, pcov = curve_fit( calib_manning_depth(       channel_width,
-                                                           slope,
-                                                           not use_depth ),
-                                flow_depth, data['Discharge'],
-                                bounds=bounds )
-    elif channel_depth is not None:
-        ncalib = 1
-        sys.exit("Not set up to calibrate an unknown channel width with a known "+
-                 "channel depth.")
-    else:
-        ncalib = 2
-        # Bounds for curve fit
-        bounds = np.array(bounds).transpose()
-        bounds = (bounds[0][:4+ncalib], bounds[1][:4+ncalib])
-        # Create the curve fit
-        popt, pcov = curve_fit( calib_manning_depth_width( slope,
-                                                           not use_depth ),
-                                flow_depth, data['Discharge'],
-                                bounds=bounds )
+        # popt = optimization parameters, pcor = covariance matrix
+        if channel_width is not None and channel_depth is not None:
+            ncalib = 0 # Number of calibrated geometries: width, depth
+            # Bounds for curve fit
+            _bounds = np.array(bounds).transpose()
+            _bounds = (_bounds[0][:4+ncalib], _bounds[1][:4+ncalib])
+            # Create the curve fit
+            popt, pcov = curve_fit( calib_manning(             channel_depth,
+                                                               channel_width,
+                                                               slope,
+                                                               not use_depth ),
+                                    flow_depth, data['Discharge'],
+                                    bounds=_bounds )
+        elif channel_width is not None:
+            ncalib = 1
+            # Bounds for curve fit
+            _bounds = np.array(bounds).transpose()
+            _bounds = (_bounds[0][:4+ncalib], _bounds[1][:4+ncalib])
+            # Create the curve fit
+            popt, pcov = curve_fit( calib_manning_depth(       channel_width,
+                                                               slope,
+                                                               not use_depth ),
+                                    flow_depth, data['Discharge'],
+                                    bounds=_bounds )
+        elif channel_depth is not None:
+            ncalib = 1
+            sys.exit("Not set up to calibrate an unknown channel width with "+
+                     "a known channel depth.")
+        else:
+            ncalib = 2
+            # Bounds for curve fit
+            _bounds = np.array(bounds).transpose()
+            _bounds = (_bounds[0][:4+ncalib], _bounds[1][:4+ncalib])
+            # Create the curve fit
+            popt, pcov = curve_fit( calib_manning_depth_width( slope,
+                                                               not use_depth ),
+                                    flow_depth, data['Discharge'],
+                                    bounds=_bounds )
+
+        print( "" )
+        print( "Stage offset:", stage_offset )
+        # Update offset if another round will happen
+        if niter > 1:
+            _mannings_n = popt[0]
+            _k_ob = popt[1]
+            _P_ob = popt[2]
+            _discharge_offset = popt[3]
+            if channel_depth is None:
+                _channel_depth = popt[4]
+            else:
+                _channel_depth = channel_depth
+            if channel_width is None:
+                _channel_width = popt[5]
+            else:
+                _channel_width = channel_width
+            # Initial guess is 0
+            dh = fsolve( lambda h_to_solve: 
+                            flow_depth_from_Manning_discharge(
+                                h_to_solve,
+                                n                     = _mannings_n,
+                                k_Qbank               = _k_ob,
+                                P_Qbank               = _P_ob,
+                                stage_depth_Q_offset  = _discharge_offset,
+                                h_bank                = _channel_depth,
+                                channelwidth          = _channel_width,
+                                slope                 = slope,
+                                use_Rh                = not use_depth
+                            ),
+                        0 )[0]
+            # If this is the h at which Q = 0,
+            # add it from offset
+            # to be later subtracted from the stage to give
+            # parameterized flow depth
+            stage_offset += dh
+            #stage_offset = so
+            print( "dh:", dh )
+            print( "Stage offset:", stage_offset )
+
+        # Decrement iteration counter
+        niter -= 1
+
 
     ################
     # COMPUTE RMSE #
