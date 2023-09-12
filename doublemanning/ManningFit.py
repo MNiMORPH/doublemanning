@@ -60,7 +60,7 @@ def flow_depth_from_Manning_discharge( h, n, k_Qbank, P_Qbank,
                                        channelwidth: float, slope: float,
                                        use_Rh=True ):
     """
-    Use this to fidn the "flow depth" at which Q=0.
+    Use this to find the computed flow depth at which Q=0.
     If nonzero, then this gives an additional correction from
     stage to flow depth.
     """
@@ -93,7 +93,7 @@ def main():
 
     parser.add_argument('-y', '--configfile', type=str,
                             help='YAML file from which all inputs are read.')
-    parser.add_argument('-d', '--datafile', type=str,
+    parser.add_argument('-f', '--datafile', type=str,
                             help='file with two columns: Discharge, Stage')
     parser.add_argument('--delimiter', type=str, default='\t',
                             help='"tab", "comma", or "semicolon"')
@@ -101,6 +101,8 @@ def main():
                             help='river-channel width')
     parser.add_argument('-H', '--channel_depth', type=float, default=None,
                             help='river-channel depth (not flow depth)')
+    parser.add_argument('-d', '--stage_depth_offset', type=float, default=0,
+                            help='stage at depth = 0')
     parser.add_argument('-s', '--slope', type=float, default=None,
                             help='channel slope')
     parser.add_argument('-o', '--outfile', default=None,
@@ -141,6 +143,7 @@ def main():
             channel_depth = float(yconf['channel']['depth'])
         except:
             channel_depth = None
+        stage_offset = float(yconf['channel']['stage_offset'])
         slope = float(yconf['channel']['slope'])
         use_depth = yconf['channel']['use_depth']
         
@@ -157,6 +160,7 @@ def main():
         # Channel
         channel_width = args.channel_width
         channel_depth = args.channel_depth
+        stage_offset = float(yconf['channel']['stage_offset'])
         slope = args.slope
         use_depth = args.use_depth
         
@@ -258,6 +262,9 @@ def main():
                channel_depth_bounds,
                channel_width_bounds ]
                
+    # Compute depth
+    flow_depth = data['Stage'] - stage_offset
+
     # popt = optimization parameters, pcor = covariance matrix
     if channel_width is not None and channel_depth is not None:
         ncalib = 0 # Number of calibrated geometries: width, depth
@@ -269,7 +276,7 @@ def main():
                                                            channel_width,
                                                            slope,
                                                            not use_depth ),
-                                data['Stage'], data['Discharge'],
+                                flow_depth, data['Discharge'],
                                 bounds=bounds )
     elif channel_width is not None:
         ncalib = 1
@@ -280,7 +287,7 @@ def main():
         popt, pcov = curve_fit( calib_manning_depth(       channel_width,
                                                            slope,
                                                            not use_depth ),
-                                data['Stage'], data['Discharge'],
+                                flow_depth, data['Discharge'],
                                 bounds=bounds )
     elif channel_depth is not None:
         ncalib = 1
@@ -294,7 +301,7 @@ def main():
         # Create the curve fit
         popt, pcov = curve_fit( calib_manning_depth_width( slope,
                                                            not use_depth ),
-                                data['Stage'], data['Discharge'],
+                                flow_depth, data['Discharge'],
                                 bounds=bounds )
 
     ################
@@ -304,18 +311,18 @@ def main():
     if channel_width is not None and channel_depth is not None:
         Q_predicted = calib_manning( channel_depth, channel_width,
                                          slope, not use_depth) \
-                                         ( data['Stage'], *popt )
+                                         ( flow_depth, *popt )
     elif channel_width is not None:
         Q_predicted = calib_manning_depth( channel_width, slope,
                                                 not use_depth ) \
-                                                ( data['Stage'], *popt)
+                                                ( flow_depth, *popt)
     elif channel_depth is not None:
         sys.exit("Not set up to calibrate an unknown channel width with a known "+
                  "channel depth.")
     else:
         Q_predicted = calib_manning_depth_width( slope,
                                                      not use_depth ) \
-                                                     ( data['Stage'], *popt)
+                                                     ( flow_depth, *popt)
     print( Q_predicted - data['Discharge'] )
 
     # Maybe add this as a plotting option, eventually
@@ -375,7 +382,7 @@ def main():
 
     if plotflag:
         _h = np.arange(0.,10.1, 0.1) # Fixed for now
-        plt.plot(data['Stage'].to_list(), data['Discharge'].to_list(), 'k.')
+        plt.plot(flow_depth.to_list(), data['Discharge'].to_list(), 'k.')
         if channel_width is not None and channel_depth is not None:
             plt.plot(_h, calib_manning(channel_depth, channel_width, slope, not use_depth)(_h, *popt))
         elif channel_width is not None:
