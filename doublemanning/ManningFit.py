@@ -191,30 +191,60 @@ def main():
     # CURVE FIT: STAGE-DISCHARGE DATA WITH 2X MANNING #
     ###################################################
 
+    # Default bounds
+    mannings_n_bounds = (0, 0.2)
+    floodplain_coeff_bounds = (0, np.inf)
+    floodplain_exponent_bounds = (0, np.inf)
+    Q_offset_bounds = (-np.inf, np.inf)
+    channel_depth_bounds = (0, np.inf)
+    channel_width_bounds = (0, np.inf)
+    
+    # Combine these together
+    bounds = [ mannings_n_bounds,
+               floodplain_coeff_bounds,
+               floodplain_exponent_bounds,
+               Q_offset_bounds,
+               channel_depth_bounds,
+               channel_width_bounds ]
+               
     # popt = optimization parameters, pcor = covariance matrix
     if channel_width is not None and channel_depth is not None:
         ncalib = 0 # Number of calibrated geometries: width, depth
+        # Bounds for curve fit
+        bounds = np.array(bounds).transpose()
+        bounds = (bounds[0][:4+ncalib], bounds[1][:4+ncalib])
+        # Create the curve fit
         popt, pcov = curve_fit( calib_manning(             channel_depth,
                                                            channel_width,
                                                            slope,
                                                            not use_depth ),
-                                data['Stage'], data['Discharge'] )
+                                data['Stage'], data['Discharge'],
+                                bounds=bounds )
     elif channel_width is not None:
         ncalib = 1
+        # Bounds for curve fit
+        bounds = np.array(bounds).transpose()
+        bounds = (bounds[0][:4+ncalib], bounds[1][:4+ncalib])
+        # Create the curve fit
         popt, pcov = curve_fit( calib_manning_depth(       channel_width,
                                                            slope,
                                                            not use_depth ),
-                                data['Stage'], data['Discharge'] )
+                                data['Stage'], data['Discharge'],
+                                bounds=bounds )
     elif channel_depth is not None:
         ncalib = 1
         sys.exit("Not set up to calibrate an unknown channel width with a known "+
                  "channel depth.")
     else:
         ncalib = 2
+        # Bounds for curve fit
+        bounds = np.array(bounds).transpose()
+        bounds = (bounds[0][:4+ncalib], bounds[1][:4+ncalib])
+        # Create the curve fit
         popt, pcov = curve_fit( calib_manning_depth_width( slope,
                                                            not use_depth ),
-                                data['Stage'], data['Discharge'] )
-
+                                data['Stage'], data['Discharge'],
+                                bounds=bounds )
 
     ################
     # COMPUTE RMSE #
