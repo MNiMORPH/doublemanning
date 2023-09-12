@@ -21,7 +21,7 @@ def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank,
               channelwidth: float, slope: float, use_Rh=True):
     """
     Returns discharge given flow depth, 
-    * h: Input. Stage.
+    * h: Input. Flow depth.
     * n: Manning's n
     * k_Qbank, P_Qbank: Power-law fititng parameters for floodplain hypsometry,
                         thereby controlling flow depth beyond the channel, that 
@@ -55,6 +55,24 @@ def calib_manning_depth(channelwidth, slope, use_Rh):
 def calib_manning_depth_width(slope, use_Rh):
     return partial( _manning, slope=slope, use_Rh=use_Rh )
 
+def flow_depth_from_Manning_discharge( h, n, k_Qbank, P_Qbank,
+                                       stage_depth_Q_offset, h_bank,
+                                       channelwidth: float, slope: float,
+                                       use_Rh=True ):
+    """
+    Use this to fidn the "flow depth" at which Q=0.
+    If nonzero, then this gives an additional correction from
+    stage to flow depth.
+    """
+    # Does the flow go overbank?
+    ob = h > h_bank
+    if use_Rh:
+        R_h = h*self.b / (2*h + self.b)
+    else:
+        _r = h
+    # Return the flow depth at a given discharge
+    return self.b/self.n * _r**(5/3.) * self.S**0.5 \
+              + ob*self.k*(h-self.h_bank)**(ob*self.P) - self.Q
 
 ################
 # MAIN PROGRAM #
