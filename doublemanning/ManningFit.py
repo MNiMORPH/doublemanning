@@ -38,9 +38,11 @@ def _manning(h, n, k_Qbank, P_Qbank, stage_depth_Q_offset, h_bank,
     """
     if use_Rh:
         Rh = h*channelwidth/(2*h+channelwidth)
-        Q_ch = channelwidth * Rh**(5/3.) * slope**(1/2.) / n
+        Q_ch = np.sign(Rh) * \
+                  channelwidth * np.abs(Rh)**(5/3.) * slope**(1/2.) / n
     else:
-        Q_ch = channelwidth * h**(5/3.) * slope**(1/2.) / n
+        Q_ch = np.sign(h) * \
+                  channelwidth * np.abs(h)**(5/3.) * slope**(1/2.) / n
     _ob = (h > h_bank)
     Q_fp = _ob * k_Qbank * (h-h_bank)**(P_Qbank * _ob)
     return Q_ch + Q_fp + stage_depth_Q_offset
@@ -76,9 +78,14 @@ def flow_depth_from_Manning_discharge( h, n, k_Qbank, P_Qbank,
     # that it is the discharge at which stage = 0
     # (It is used here, iteratively, to bring this --> 0, s.t.
     # the final stage = flow depth, in a rectangular channel parameterization.)
-    return channelwidth/n * _r**(5/3.) * slope**0.5 \
+    hnew = channelwidth/n * _r**(5/3.) * slope**0.5 \
               + ob * k_Qbank * (h - h_bank)**(ob * P_Qbank) \
               - stage_depth_Q_offset
+    # !!!! HM, THIS DOESN'T SEEM TO FIX THE FIT ISSUE
+    if np.isfinite(hnew):
+        return hnew
+    else:
+        return 0    
 
 ################
 # MAIN PROGRAM #
