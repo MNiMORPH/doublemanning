@@ -359,8 +359,12 @@ def main():
     ############
 
     if plotflag:
-        _h = np.arange(0.,10.1, 0.1) # Fixed for now
+        print( flow_params['Stage at Q = 0 [m]'] )
+        print( flow_params['Bank height [m]'] )
+        _h = np.arange(0., 2*(flow_params['Bank height [m]'][0] + flow_params['Stage at Q = 0 [m]'][0]), 0.01) # Fixed for now
         plt.plot(data['Stage'].to_list(), data['Discharge'].to_list(), 'k.')
+        _xlim = plt.xlim()
+        _ylim = plt.ylim()
         if channel_width is not None and channel_depth is not None:
             plt.plot(_h, calib_manning(channel_depth, channel_width, slope, not use_depth)(_h, *popt))
         elif channel_width is not None:
@@ -371,6 +375,10 @@ def main():
         else:
             plt.plot(_h, calib_manning_depth_width(slope, not use_depth)(_h, *popt))
         #plt.plot(_h, makemanning(2*args.channelwidth, slope)(_h, *popt))
+        plt.xlabel('Stage [m]')
+        plt.ylabel('Discharge [m$^3$ s$^{-1}$]')
+        plt.xlim((_xlim[0], _xlim[-1]))
+        plt.ylim((0, _ylim[-1]))
         plt.show()
 
 
