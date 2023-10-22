@@ -37,7 +37,7 @@ def _manning(stage, n, k_Qbank, P_Qbank, stage_depth_h_offset, h_bank,
     """
     h = stage - stage_depth_h_offset
     if use_Rh:
-        Rh = h*channelwidth/(2*h+channelwidth)
+        Rh = h*channelwidth/(2* np.minimum(h, h_bank) + channelwidth)
         Q_ch = np.sign(Rh) * \
                   channelwidth * np.abs(Rh)**(5/3.) * slope**(1/2.) / n
     else:
