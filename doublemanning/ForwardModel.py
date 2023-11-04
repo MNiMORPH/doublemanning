@@ -1,6 +1,13 @@
-from scipy.optimize import fsolve
+#! /usr/bin/python3
 
-class ForwardModel( object )
+# Written by A. Wickert
+
+from scipy.optimize import fsolve
+import pandas as pd
+import argparse
+import sys
+
+class ForwardModel( object ):
     """
     Use Manning's equation to obtain either
       * flow depth from river discharge
@@ -86,7 +93,11 @@ class ForwardModel( object )
           * Channel width
           * Channel slope
         """
-        params = pd.read_csv(_csv_path)
+        try:
+            params = pd.read_csv( _csv_path )
+        except:
+            print("\nCould not read from", args.configfile, "\n")
+            sys.exit(2)
         self.set_n( params["Manning's n"] )
         self.set_k( params["Floodplain flow coefficient"] )
         self.set_P( params["Floodplain flow power-law exponent"] )
@@ -122,7 +133,7 @@ class ForwardModel( object )
     # BMI: SHARED METHODS #
     #######################
 
-    def initialize(self, paramfile)
+    def initialize(self, paramfile):
         """
         Inspired by the CSDMS BMI, but taking a CSV instead of a YAML
         based on the output from ManningFit
@@ -132,9 +143,6 @@ class ForwardModel( object )
         :param paramfile: path to file with double-Manning fit parameters
         """
         self.set_parameters_from_DoubleManning_fit( paramfile )
-
-    def finalize(self):
-        pass
 
     #####################################
     # Compute flow depth from discharge #
@@ -210,6 +218,9 @@ class FlowDepthDoubleManning( ForwardModel ):
         """
         return self.update(Q)
 
+    def finalize(self):
+        print( self.h )
+
 class StageDoubleManning( ForwardModel ):
     """
     Compute stage from discharge.
@@ -231,6 +242,9 @@ class StageDoubleManning( ForwardModel ):
         """
         return self.update(Q)
 
+    def finalize(self):
+        print( self.stage )
+
 class DischargeDoubleManning( ForwardModel ):
     """
     Compute discharge from stage
@@ -242,8 +256,7 @@ class DischargeDoubleManning( ForwardModel ):
         (i.e., BMI)
         """
         self.Q = self.compute_depth(Q)
-        self.stage = self.h + self.stage_offset
-        return self.stage
+        return self.Q
 
     def run(self, stage=None):
         """
@@ -253,4 +266,56 @@ class DischargeDoubleManning( ForwardModel ):
         """
         return self.update(stage)
     
+    def finalize(self):
+        print( self.Q )
+
+################
+# MAIN PROGRAM #
+################
+
+def main():
+
+    ##########
+    # PARSER #
+    ##########
+
+    parser = argparse.ArgumentParser( description=
+              'Return stage or discharge based on a double-Manning fit. '+
+              'All values are SI (mks).'
+              )
+
+    parser.add_argument('-p', '--paramfile', type=str,
+                            help='CSV file for double-Manning parameters.')
+    parser.add_argument('-s', '--stage', default=False,
+                            help='Calculate discharge from this stage.')
+    parser.add_argument('-H', '--depth', default=False,
+                            help='Calculate discharge from this flow depth.')
+    parser.add_argument('-Q', '--discharge', default=False,
+                            help='Calculate stage from this discharge.')
+
+    # Parse args if anything is passed.
+    # If nothing is passed, then print help and exit.
+    args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
     
+    if sum( args['s'], args['h'], args['Q'] ) > 1:
+        print("\nSelect only one of s, h, Q.\n")
+        sys.exit(2)
+
+    if args['stage']:
+        m2 = StageDoubleManning()
+    elif args['depth']:
+        m2 = FlowDepthDoubleManning()
+    elif args['discharge']:
+        m2 = DischargeDoubleManning()
+
+    m2.initialize( args['paramfile'] )
+    m2.run()
+    m2.finalize()
+    
+################
+# ACCESS POINT #
+################
+
+if __name__ == "__main__":
+    main()
+
