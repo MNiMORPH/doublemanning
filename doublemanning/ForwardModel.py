@@ -1,38 +1,83 @@
 from scipy.optimize import fsolve
 
-class FlowDepthDoubleManning( object ):
+class ForwardModel( object )
     """
-    Use Manning's equation to obtain flow depth from river discharge,
+    Use Manning's equation to obtain either
+      * flow depth from river discharge
+      or
+      * discharge from flow depth
     using a conversion from ManningFit.py outputs
     """
-    def __init__(self, use_Rh):
+    def __init__(self, use_Rh=True):
         # Default to using hyraulic radius and not just depth
         self.use_Rh = use_Rh
 
     def set_n(self, _var):
+        """
+        Set Manning's n
+        """
         self.n = _var
 
     def set_k(self, _var):
+        """
+        Set floodplain coefficient
+        """
         self.k = _var
 
     def set_P(self, _var):
+        """
+        Set floodplain power
+        """
         self.P = _var
         
     def set_stage_offset(self, _var):
+        """
+        Set stage offset: depth = stage - stage_offset
+        """
         self.stage_offset = _var
 
     def set_h_bank(self, _var):
+        """
+        Set bank height = channel depth
+        """
         self.h_bank = _var
 
     def set_b(self, _var):
+        """
+        Set channel width
+        """
         self.b = _var
 
     def set_S(self, _var):
+        """
+        Set channel slope
+        """
         self.S = _var
 
     def set_Q(self, _var):
+        """
+        Set river discharge, if this is to be an input (and depth or stage
+        the output).
+        This can be a scalar or an array.
+        """
         self.Q = _var
 
+    def set_stage(self, _var):
+        """
+        Set river stage, if this is to be an input (and discharge the output).
+        This can be a scalar or an array.
+        """
+        self.Q = _var
+
+    def set_depth(self, _var):
+        """
+        Set flow depth, if this is to be an input (and discharge the output).
+        This differs from setting stage in assumning that stage_offset = 0.
+        This can be a scalar or an array.
+        """
+        self.Q = _var
+
+class FlowDepthDoubleManning( object ):
     def flow_depth_from_Manning_discharge( self, stage ):
         # flow depth
         h = stage - self.stage_offset
