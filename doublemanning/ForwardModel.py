@@ -139,9 +139,9 @@ class ForwardModel( object ):
         """
         self.Q = _var
 
-    #######################
-    # BMI: SHARED METHODS #
-    #######################
+    #################
+    # HARED METHODS #
+    #################
 
     def initialize(self, paramfile):
         """
@@ -153,10 +153,6 @@ class ForwardModel( object ):
         :param paramfile: path to file with double-Manning fit parameters
         """
         self.set_parameters_from_DoubleManning_fit( paramfile )
-
-    #####################################
-    # Compute flow depth from discharge #
-    #####################################
 
     def _stage_from_discharge_rootfinder( self, stage ):
         """
@@ -174,13 +170,19 @@ class ForwardModel( object ):
         return self.b/self.n * _r**(5/3.) * self.S**0.5 \
                   + ob*self.k*(h-self.h_bank)**(ob*self.P) - self.Q
 
+    #####################################
+    # Compute flow depth from discharge #
+    #####################################
+
     def depth_from_discharge(self, Q=None):
         if Q is not None:
             self.Q = Q
         if Q == 0:
-            return 0
+            self.h = 0
         else:
-            return fsolve( self._stage_from_discharge_rootfinder, 1. )[0]
+            self.h = fsolve( self._stage_from_discharge_rootfinder, 1. )[0] \
+                        - self.stage_offset
+        return self.h
 
     ################################
     # Compute stage from discharge #
