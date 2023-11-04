@@ -322,7 +322,8 @@ def main():
                          "Floodplain flow power-law exponent",
                          "Stage at Q = 0 [m]",
                          "Bank height [m]",
-                         "Channel width [m]" ]
+                         "Channel width [m]",
+                         "Channel slope [m]" ]
 
     _param_sd = np.diag(pcov)**2
     flow_params = {}
