@@ -328,9 +328,37 @@ def main():
     _param_sd = np.diag(pcov)**2
     flow_params = {}
     flow_param_SDs = {}
-    for i in range(4+ncalib):
-        flow_params[flow_param_names[i]] = [popt[i]]
-        flow_param_SDs["SD: "+flow_param_names[i]] = _param_sd[i]
+    for i in range( len(flow_param_names) ):
+        # First see if it was solved for
+        try:
+            flow_params[flow_param_names[i]] = [popt[i]]
+        # If not, see if it was a default-passed value
+        # (This should always be the case for slope)
+        except:
+            if flow_param_names[i] == "Bank height [m]":
+                flow_params[flow_param_names[i]] = channel_depth
+            elif flow_param_names[i] == "Channel width [m]":
+                flow_params[flow_param_names[i]] = channel_width
+            elif flow_param_names[i] == "Channel slope [m]":
+                flow_params[flow_param_names[i]] = slope
+            else:
+                raise Exception("No candidate for output.")
+                
+        # First see if it was solved for
+        try:
+            flow_param_SDs["SD: "+flow_param_names[i]] = _param_sd[i]
+        # If not, see if it was a default-passed value
+        # (This should always be the case for slope)
+        except:
+            if flow_param_names[i] == "Bank height [m]":
+                flow_param_SDs["SD: "+flow_param_names[i]] = 0
+            elif flow_param_names[i] == "Channel width [m]":
+                flow_param_SDs["SD: "+flow_param_names[i]] = 0
+            elif flow_param_names[i] == "Channel slope [m]":
+                flow_param_SDs["SD: "+flow_param_names[i]] = 0
+            else:
+                raise Exception("No candidate for output.")
+
     rmse_dict = { "Fit RMSE [m^3/s]": rmse }
 
     _param_sd = np.diag(pcov)**2
