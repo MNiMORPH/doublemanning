@@ -1,4 +1,7 @@
-from doublemanning import ManningFit
-def cli():
+from doublemanning import ManningFit, ForwardModel
+
+def doubleMmanningFit():
     ManningFit.main()
 
+def doubleManningCalc():
+    ForwardModel.main()

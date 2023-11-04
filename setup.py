@@ -30,7 +30,8 @@ setuptools.setup(
     ],
     entry_points = {
         'console_scripts': [
-            'doublemanning = doublemanning.cli:cli'
+            'doublemanning-fit = doublemanning.cli:doubleMmanningFit',
+            'doublemanning-calc = doublemanning.cli:doubleManningCalc'
         ],
     },
     keywords='fluvial geomorphology sediment transport landscape evolution',
