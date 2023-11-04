@@ -323,7 +323,7 @@ def main():
                          "Stage at Q = 0 [m]",
                          "Bank height [m]",
                          "Channel width [m]",
-                         "Channel slope [m]" ]
+                         "Channel slope" ]
 
     _param_sd = np.diag(pcov)**2
     flow_params = {}
@@ -339,7 +339,7 @@ def main():
                 flow_params[flow_param_names[i]] = channel_depth
             elif flow_param_names[i] == "Channel width [m]":
                 flow_params[flow_param_names[i]] = channel_width
-            elif flow_param_names[i] == "Channel slope [m]":
+            elif flow_param_names[i] == "Channel slope":
                 flow_params[flow_param_names[i]] = slope
             else:
                 raise Exception("No candidate for output.")
@@ -354,7 +354,7 @@ def main():
                 flow_param_SDs["SD: "+flow_param_names[i]] = 0
             elif flow_param_names[i] == "Channel width [m]":
                 flow_param_SDs["SD: "+flow_param_names[i]] = 0
-            elif flow_param_names[i] == "Channel slope [m]":
+            elif flow_param_names[i] == "Channel slope":
                 flow_param_SDs["SD: "+flow_param_names[i]] = 0
             else:
                 raise Exception("No candidate for output.")
