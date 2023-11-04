@@ -318,8 +318,8 @@ def main():
     ##########################
 
     flow_param_names = [ "Manning's n",
-                         "Floodplain flow coefficient",
-                         "Floodplain flow power-law exponent",
+                         "Floodplain discharge coefficient",
+                         "Floodplain discharge exponent",
                          "Stage at Q = 0 [m]",
                          "Bank height [m]",
                          "Channel width [m]",
