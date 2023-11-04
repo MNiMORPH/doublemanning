@@ -318,8 +318,8 @@ def main():
     ##########################
 
     flow_param_names = [ "Manning's n",
-                         "Overbank flow coefficient",
-                         "Overbank flow power-law exponent",
+                         "Floodplain flow coefficient",
+                         "Floodplain flow power-law exponent",
                          "Stage at Q = 0 [m]",
                          "Bank height [m]",
                          "Channel width [m]" ]
