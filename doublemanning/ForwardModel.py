@@ -11,6 +11,10 @@ class ForwardModel( object )
     def __init__(self, use_Rh=True):
         # Default to using hyraulic radius and not just depth
         self.use_Rh = use_Rh
+    
+    #################################
+    # SET DOUBLE-MANNING PARAMETERS #
+    #################################
 
     def set_n(self, _var):
         """
@@ -33,6 +37,7 @@ class ForwardModel( object )
     def set_stage_offset(self, _var):
         """
         Set stage offset: depth = stage - stage_offset
+        Therefore, this is the stage where Q = 0.
         """
         self.stage_offset = _var
 
@@ -53,6 +58,29 @@ class ForwardModel( object )
         Set channel slope
         """
         self.S = _var
+        
+    # Set all of the parameters from the output file from a double-Manning fit
+    def set_parameters_from_DoubleManning_fit(self, _csv_path):
+        """
+        Reads all parameters from a CSV file provided as output from the
+        double-Manning calculation.
+        These include:
+          * Manning's n
+          * Floodplain k
+          * Floodplain P
+          * Stage offset (stage at Q=0)
+          * Bank heights
+          * Channel width
+          * Channel slope
+        """
+        params = pd.read_csv(_csv_path)
+        self.set_n( params["Manning's n"] )
+        self.set_k( params["Floodplain flow coefficient"] )
+        self.set_P( params["Floodplain flow power-law exponent"] )
+        self.set_stage_offset( params["Stage at Q = 0 [m]"] )
+        self.set_h_bank( params["Bank height [m]"] )
+        self.set_b( params["Channel width [m]"] )
+        self.set_S( params["Channel slope"] )
 
     def set_Q(self, _var):
         """
@@ -76,7 +104,7 @@ class ForwardModel( object )
         This can be a scalar or an array.
         """
         self.Q = _var
-
+        
 class FlowDepthDoubleManning( object ):
     def flow_depth_from_Manning_discharge( self, stage ):
         # flow depth
