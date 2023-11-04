@@ -264,7 +264,7 @@ class DepthFromDischarge( ForwardModel ):
         return self.update()
 
     def finalize(self):
-        print( self.h )
+        print( self.h.iloc[0] )
 
 class StageFromDischarge( ForwardModel ):
     """
