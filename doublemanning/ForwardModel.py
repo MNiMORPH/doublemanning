@@ -359,11 +359,11 @@ def main():
 
     parser.add_argument('-p', '--paramfile', type=str,
                             help='CSV file for double-Manning parameters.')
-    parser.add_argument('-sQ', '--stage_Q', type=float, default=None,
+    parser.add_argument('-zQ', '--stage_Q', type=float, default=None,
                             help='Calculate discharge from this stage.')
-    parser.add_argument('-HQ', '--depth_Q', type=float, default=None,
+    parser.add_argument('-hQ', '--depth_Q', type=float, default=None,
                             help='Calculate discharge from this flow depth.')
-    parser.add_argument('-Qs', '--discharge_s', type=float, default=None,
+    parser.add_argument('-Qz', '--discharge_s', type=float, default=None,
                             help='Calculate stage from this discharge.')
     parser.add_argument('-Qh', '--discharge_H', type=float, default=None,
                             help='Calculate flow depth from this discharge.')
