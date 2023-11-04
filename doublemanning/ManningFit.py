@@ -373,8 +373,13 @@ def main():
         for key in flow_param_SDs:
             print( key, ":", flow_param_SDs[key] )
 
+    use_depth_dict = { "Use flow depth instead of Rh": use_depth }
+
     if outfile is not None:
-        outarray = {**flow_params, **flow_param_SDs, **rmse_dict}
+        outarray = { **flow_params,
+                     **flow_param_SDs,
+                     **rmse_dict, 
+                     **use_depth_dict }
         outparams = pd.DataFrame.from_dict(outarray)
         outparams.to_csv(outfile, index=False)
 
