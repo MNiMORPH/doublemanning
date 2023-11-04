@@ -60,14 +60,21 @@ class ForwardModel( object ):
         """
         self.b = _var
 
-    def set_S(self, _input):
+    def set_S(self, _var):
         """
         Set channel slope
         """
         self.S = _var
         
+    def set_use_Rh(self, _var):
+        """
+        Set the flag to use hydraulic radius instead of flow depth.
+        This should typically be true.
+        """
+        self.use_Rh = _var
+        
     # Set all of the parameters at once from directly passed information
-    def set_all_params(self, n, k, P, stage_offset, h_bank, b, S):
+    def set_all_params(self, n, k, P, stage_offset, h_bank, b, S, use_Rh):
         """
         If you wish to set all of the parameters without an input file
         """
@@ -78,6 +85,7 @@ class ForwardModel( object ):
         self.set_h_bank(h_bank)
         self.set_b(b)
         self.set_S(S)
+        self.set_use_Rh(use_Rh)
     
     # Set all of the parameters from the output file from a double-Manning fit
     def set_parameters_from_DoubleManning_fit(self, _csv_path):
@@ -92,11 +100,12 @@ class ForwardModel( object ):
           * Bank heights
           * Channel width
           * Channel slope
+          * Flag to compute using depth instead of hydraulic radius
         """
         try:
             params = pd.read_csv( _csv_path )
         except:
-            print("\nCould not read from", args.configfile, "\n")
+            print("\nCould not read params from file:\n", _csv_path, "\n")
             sys.exit(2)
         self.set_n( params["Manning's n"] )
         self.set_k( params["Floodplain flow coefficient"] )
@@ -105,6 +114,7 @@ class ForwardModel( object ):
         self.set_h_bank( params["Bank height [m]"] )
         self.set_b( params["Channel width [m]"] )
         self.set_S( params["Channel slope"] )
+        self.set_use_Rh( not params["Use flow depth instead of Rh"].bool() )
 
     def set_Q(self, _var):
         """
@@ -183,26 +193,32 @@ class ForwardModel( object ):
     # Compute discharge from stage #
     ################################
     
-    def discharge_from_stage( self, stage=None ):
+    def discharge_from_stage( self, _stage=None ):
         # flow depth
-        self.stage = stage # unnecessary but does no harm
-        h = stage - self.stage_offset
+        if self.stage is None:
+            if _stage is None:
+                raise Exception("Stage must be set.")
+            else: self.stage = _stage # unnecessary but does no harm
+        h = self.stage - self.stage_offset
         # Does the flow go overbank?
         ob = h > self.h_bank
         if self.use_Rh:
             _r = h*self.b / (2*h + self.b)
         else:
             _r = h
-        return self.b/self.n * _r**(5/3.) * self.S**0.5 \
-                  + ob*self.k*(h-self.h_bank)**(ob*self.P)
+        self.Q =  self.b/self.n * _r**(5/3.) * self.S**0.5 \
+                    + ob*self.k*(h-self.h_bank)**(ob*self.P)
+        return self.Q
 
 
 class FlowDepthDoubleManning( ForwardModel ):
     """
     Compute depth from discharge.
     """
+    def __init__(self, Q):
+        self.Q = Q
 
-    def update(self, Q=None):
+    def update(self):
         """
         Not exactly updating anything, but to follow standard CSDMS I(U)RF
         (i.e., BMI)
@@ -210,7 +226,7 @@ class FlowDepthDoubleManning( ForwardModel ):
         self.h = self.depth_from_discharge(Q)
         return self.h
 
-    def run(self, Q=None):
+    def run(self):
         """
         Not exactly running anything, but to follow standard CSDMS I(U)RF
         (i.e., BMI)
@@ -219,14 +235,16 @@ class FlowDepthDoubleManning( ForwardModel ):
         return self.update(Q)
 
     def finalize(self):
-        print( self.h )
+        print( self.h.iloc[0] )
 
 class StageDoubleManning( ForwardModel ):
     """
     Compute stage from discharge.
     """
+    def __init__(self, Q):
+        self.Q = Q
 
-    def update(self, Q=None):
+    def update(self):
         """
         Not exactly updating anything, but to follow standard CSDMS I(U)RF
         (i.e., BMI)
@@ -234,7 +252,7 @@ class StageDoubleManning( ForwardModel ):
         self.stage = self.stage_from_discharge(Q)
         return self.stage
 
-    def run(self, Q=None):
+    def run(self):
         """
         Not exactly running anything, but to follow standard CSDMS I(U)RF
         (i.e., BMI)
@@ -243,31 +261,33 @@ class StageDoubleManning( ForwardModel ):
         return self.update(Q)
 
     def finalize(self):
-        print( self.stage )
+        print( self.stage.iloc[0] )
 
 class DischargeDoubleManning( ForwardModel ):
     """
     Compute discharge from stage
     """
+    def __init__(self, stage):
+        self.stage = stage
 
-    def update(self, stage=None):
+    def update(self):
         """
         Not exactly updating anything, but to follow standard CSDMS I(U)RF
         (i.e., BMI)
         """
-        self.Q = self.compute_depth(Q)
+        self.Q = self.discharge_from_stage()
         return self.Q
 
-    def run(self, stage=None):
+    def run(self):
         """
         Not exactly running anything, but to follow standard CSDMS I(U)RF
         (i.e., BMI)
         Same as "update" step
         """
-        return self.update(stage)
+        return self.update()
     
     def finalize(self):
-        print( self.Q )
+        print( self.Q.iloc[0] )
 
 ################
 # MAIN PROGRAM #
@@ -286,29 +306,31 @@ def main():
 
     parser.add_argument('-p', '--paramfile', type=str,
                             help='CSV file for double-Manning parameters.')
-    parser.add_argument('-s', '--stage', default=False,
+    parser.add_argument('-s', '--stage', type=float, default=None,
                             help='Calculate discharge from this stage.')
-    parser.add_argument('-H', '--depth', default=False,
+    parser.add_argument('-H', '--depth', type=float, default=None,
                             help='Calculate discharge from this flow depth.')
-    parser.add_argument('-Q', '--discharge', default=False,
+    parser.add_argument('-Q', '--discharge', type=float, default=None,
                             help='Calculate stage from this discharge.')
 
     # Parse args if anything is passed.
     # If nothing is passed, then print help and exit.
     args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
     
-    if sum( args['s'], args['h'], args['Q'] ) > 1:
+    if sum( ( args.stage is not None,
+              args.depth is not None,
+              args.discharge is not None) ) > 1:
         print("\nSelect only one of s, h, Q.\n")
         sys.exit(2)
 
-    if args['stage']:
-        m2 = StageDoubleManning()
-    elif args['depth']:
-        m2 = FlowDepthDoubleManning()
-    elif args['discharge']:
-        m2 = DischargeDoubleManning()
+    if args.stage:
+        m2 = DischargeDoubleManning( args.stage )
+    elif args.depth:
+        m2 = DischargeDoubleManning( args.depth )
+    elif args.discharge:
+        m2 = StageDoubleManning( args.discharge )
 
-    m2.initialize( args['paramfile'] )
+    m2.initialize( args.paramfile )
     m2.run()
     m2.finalize()
     
