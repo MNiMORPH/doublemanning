@@ -53,12 +53,25 @@ class ForwardModel( object )
         """
         self.b = _var
 
-    def set_S(self, _var):
+    def set_S(self, _input):
         """
         Set channel slope
         """
         self.S = _var
         
+    # Set all of the parameters at once from directly passed information
+    def set_all_params(self, n, k, P, stage_offset, h_bank, b, S):
+        """
+        If you wish to set all of the parameters without an input file
+        """
+        self.set_n(n)
+        self.set_k(k)
+        self.set_P(P)
+        self.set_stage_offset(stage_offset)
+        self.set_h_bank(h_bank)
+        self.set_b(b)
+        self.set_S(S)
+    
     # Set all of the parameters from the output file from a double-Manning fit
     def set_parameters_from_DoubleManning_fit(self, _csv_path):
         """
@@ -104,9 +117,34 @@ class ForwardModel( object )
         This can be a scalar or an array.
         """
         self.Q = _var
+
+    #######################
+    # BMI: SHARED METHODS #
+    #######################
+
+    def initialize(self, paramfile)
+        """
+        Inspired by the CSDMS BMI, but taking a CSV instead of a YAML
+        based on the output from ManningFit
+        This could eventually be from a YAML, but I will save that possibility
+        for a future.
         
-class FlowDepthDoubleManning( object ):
-    def flow_depth_from_Manning_discharge( self, stage ):
+        :param paramfile: path to file with double-Manning fit parameters
+        """
+        self.set_parameters_from_DoubleManning_fit( paramfile )
+
+    def finalize(self):
+        pass
+
+    #####################################
+    # Compute flow depth from discharge #
+    #####################################
+
+    def _stage_from_discharge_rootfinder( self, stage ):
+        """
+        Returns a function whose root gives the river stage at the discharge
+        set by the class variable self.Q
+        """
         # flow depth
         h = stage - self.stage_offset
         # Does the flow go overbank?
@@ -118,37 +156,101 @@ class FlowDepthDoubleManning( object ):
         return self.b/self.n * _r**(5/3.) * self.S**0.5 \
                   + ob*self.k*(h-self.h_bank)**(ob*self.P) - self.Q
 
-    def compute_depth(self, Q=None):
+    def depth_from_discharge(self, Q=None):
         if Q is not None:
             self.Q = Q
         if Q == 0:
             return 0
         else:
-            return fsolve( self.flow_depth_from_Manning_discharge, 1. )[0]
+            return fsolve( self._stage_from_discharge_rootfinder, 1. )[0]
 
-    def initialize(self, n, k, P, stage_offset, h_bank, b, S):
-        self.set_n(n)
-        self.set_k(k)
-        self.set_P(P)
-        self.set_stage_offset(stage_offset)
-        self.set_h_bank(h_bank)
-        self.set_b(b)
-        self.set_S(S)
+    ################################
+    # Compute stage from discharge #
+    ################################
+
+    def stage_from_discharge(self, Q=None):
+        return self.depth_from_discharge(Q) + self.stage_offset
+
+    ################################
+    # Compute discharge from stage #
+    ################################
+    
+    def discharge_from_stage( self, stage=None ):
+        # flow depth
+        self.stage = stage # unnecessary but does no harm
+        h = stage - self.stage_offset
+        # Does the flow go overbank?
+        ob = h > self.h_bank
+        if self.use_Rh:
+            _r = h*self.b / (2*h + self.b)
+        else:
+            _r = h
+        return self.b/self.n * _r**(5/3.) * self.S**0.5 \
+                  + ob*self.k*(h-self.h_bank)**(ob*self.P)
+
+
+class FlowDepthDoubleManning( ForwardModel ):
+    """
+    Compute depth from discharge.
+    """
 
     def update(self, Q=None):
         """
         Not exactly updating anything, but to follow standard CSDMS I(U)RF
+        (i.e., BMI)
         """
-        self.h = self.compute_depth(Q)
+        self.h = self.depth_from_discharge(Q)
         return self.h
 
     def run(self, Q=None):
         """
         Not exactly running anything, but to follow standard CSDMS I(U)RF
+        (i.e., BMI)
         Same as "update" step
         """
         return self.update(Q)
 
-    def finalize(self):
-        pass
+class StageDoubleManning( ForwardModel ):
+    """
+    Compute stage from discharge.
+    """
 
+    def update(self, Q=None):
+        """
+        Not exactly updating anything, but to follow standard CSDMS I(U)RF
+        (i.e., BMI)
+        """
+        self.stage = self.stage_from_discharge(Q)
+        return self.stage
+
+    def run(self, Q=None):
+        """
+        Not exactly running anything, but to follow standard CSDMS I(U)RF
+        (i.e., BMI)
+        Same as "update" step
+        """
+        return self.update(Q)
+
+class DischargeDoubleManning( ForwardModel ):
+    """
+    Compute discharge from stage
+    """
+
+    def update(self, stage=None):
+        """
+        Not exactly updating anything, but to follow standard CSDMS I(U)RF
+        (i.e., BMI)
+        """
+        self.Q = self.compute_depth(Q)
+        self.stage = self.h + self.stage_offset
+        return self.stage
+
+    def run(self, stage=None):
+        """
+        Not exactly running anything, but to follow standard CSDMS I(U)RF
+        (i.e., BMI)
+        Same as "update" step
+        """
+        return self.update(stage)
+    
+    
