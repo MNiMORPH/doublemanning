@@ -395,7 +395,10 @@ def main():
     if plotflag:
         print( flow_params['Stage at Q = 0 [m]'] )
         print( flow_params['Bank height [m]'] )
-        _h = np.arange(0., 2*(flow_params['Bank height [m]'][0] + flow_params['Stage at Q = 0 [m]'][0]), 0.01) # Fixed for now
+        try:
+            _h = np.arange(0., 2*(flow_params['Bank height [m]'][0] + flow_params['Stage at Q = 0 [m]'][0]), 0.01) # Fixed for now
+        except:
+            _h = np.arange(0., 2*(flow_params['Bank height [m]'] + flow_params['Stage at Q = 0 [m]'][0]), 0.01) # Fixed for now
         plt.plot(data['Stage'].to_list(), data['Discharge'].to_list(), 'k.')
         _xlim = plt.xlim()
         _ylim = plt.ylim()
