@@ -413,19 +413,19 @@ def main():
         except:
             plot_save_path = None
         try:
-            plot_xlim_stage_min = yconf['plotting']['stage_min']
+            plot_xlim_stage_min = float( yconf['plotting']['stage_min'] )
         except:
             plot_xlim_stage_min = None
         try:
-            plot_xlim_stage_max = yconf['plotting']['stage_max']
+            plot_xlim_stage_max = float( yconf['plotting']['stage_max'] )
         except:
             plot_xlim_stage_max = None
         try:
-            plot_ylim_discharge_min = yconf['plotting']['discharge_min']
+            plot_ylim_discharge_min = float( yconf['plotting']['discharge_min'])
         except:
             plot_ylim_discharge_min = None
         try:
-            plot_ylim_discharge_max = yconf['plotting']['discharge_max']
+            plot_ylim_discharge_max = float( yconf['plotting']['discharge_max'])
         except:
             plot_ylim_discharge_max = None
     # Otherwise, set the yaml-generated variables to None
