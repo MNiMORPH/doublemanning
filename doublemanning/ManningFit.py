@@ -444,7 +444,7 @@ def main():
         
         # First, set up the data on the plot and use this to find the
         # suggested axis limits for the full data range
-        plt.figure(figsize=(6.472,4))
+        plt.figure(figsize=(4.5,3.5))
         plt.plot(data['Stage'].to_list(), data['Discharge'].to_list(), 'k.')
 
         _xlim = list(plt.xlim())
