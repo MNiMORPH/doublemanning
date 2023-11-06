@@ -130,7 +130,7 @@ def main():
         
         # Output
         outfile = yconf['output']['outfile']
-        plotflag = yconf['output']['plot']
+        display_plot_flag = yconf['output']['plot']
         verboseflag = yconf['output']['verbose']
     else:
         # Data
@@ -393,30 +393,55 @@ def main():
     ############
 
     if plotflag:
-        print( flow_params['Stage at Q = 0 [m]'] )
-        print( flow_params['Bank height [m]'] )
+        
+        # Obtain channel depth. Different forms depending on whether it was
+        # prescribed or solved for
         try:
-            _h = np.arange(0., 2*(flow_params['Bank height [m]'][0] + flow_params['Stage at Q = 0 [m]'][0]), 0.01) # Fixed for now
+            _h_beta = flow_params['Bank height [m]'][0]
         except:
-            _h = np.arange(0., 2*(flow_params['Bank height [m]'] + flow_params['Stage at Q = 0 [m]'][0]), 0.01) # Fixed for now
+            _h_beta = flow_params['Bank height [m]']
+        
+        # Compute bankfull stage
+        _zsb = _h_beta + flow_params['Stage at Q = 0 [m]'][0]
+            
+        # Create an array of stages for plotting
+        _zs = np.arange(0., 2*_zsb, 0.01) # Fixed for now
+            
+        # Obtain _Q
+        if channel_width is not None and channel_depth is not None:
+            _Q = calib_manning( channel_depth,
+                                channel_width,
+                                slope,
+                                not use_depth)(_zs, *popt)
+        elif channel_width is not None:
+            _Q = calib_manning_depth( channel_width,
+                                      slope,
+                                      not use_depth)(_zs, *popt)
+        elif channel_depth is not None:
+            sys.exit("Not set up to calibrate an unknown channel width using "+
+                     "a known channel depth.")
+        else:
+            _Q = calib_manning_depth_width(slope, not use_depth)(_zs, *popt)
+        
+        # Now plot
+        plt.figure(figsize=(6.472,4))
         plt.plot(data['Stage'].to_list(), data['Discharge'].to_list(), 'k.')
+        plt.plot(_zs, _Q, linewidth=4, color='.3', alpha=.5)
+        
+        
+        
+        
         _xlim = plt.xlim()
         _ylim = plt.ylim()
-        if channel_width is not None and channel_depth is not None:
-            plt.plot(_h, calib_manning(channel_depth, channel_width, slope, not use_depth)(_h, *popt))
-        elif channel_width is not None:
-            plt.plot(_h, calib_manning_depth(channel_width, slope, not use_depth)(_h, *popt))
-        elif channel_depth is not None:
-            sys.exit("Not set up to calibrate an unknown channel width with a known "+
-                     "channel depth.")
-        else:
-            plt.plot(_h, calib_manning_depth_width(slope, not use_depth)(_h, *popt))
         #plt.plot(_h, makemanning(2*args.channelwidth, slope)(_h, *popt))
-        plt.xlabel('Stage [m]')
-        plt.ylabel('Discharge [m$^3$ s$^{-1}$]')
+        plt.xlabel('Stage [m]', fontsize=14)
+        plt.ylabel('Discharge [m$^3$ s$^{-1}$]', fontsize=14)
         plt.xlim((_xlim[0], _xlim[-1]))
-        plt.ylim((0, _ylim[-1]))
+        plt.ylim((_ylim[0], _ylim[-1]))
+        plt.tight_layout()
         plt.show()
+
+
 
 
 ################
