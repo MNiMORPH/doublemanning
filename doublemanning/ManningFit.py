@@ -400,6 +400,8 @@ def main():
     # CLI parsing
     if yconf is not None:
         display_plot_flag = yconf['plotting']['show']
+        display_negative_rating_curve = yconf['plotting'] \
+                                             ['display_negative_rating_curve']
         try:
             plot_save_path = yconf['plotting']['savepath']
         except:
@@ -468,8 +470,8 @@ def main():
             
         # Create an array of stages for plotting
         #_zs = np.arange(0., 2*_zsb, 0.01) # Fixed for now
-        _zs = np.linspace(_xlim[0], _xlim[-1], 200) # Fixed for now
-            
+        _zs = np.linspace(_xlim[0], _xlim[-1], 200)
+
         # Obtain _Q
         if channel_width is not None and channel_depth is not None:
             _Q = calib_manning( channel_depth,
@@ -486,9 +488,15 @@ def main():
         else:
             _Q = calib_manning_depth_width(slope, not use_depth)(_zs, *popt)
         
-        # Now plot
+        # Do we show negative (nonphysical) rating-curve outcomes?
+        if display_negative_rating_curve is False:
+            _zs = _zs[_Q > 0]
+            _Q = _Q[_Q > 0]
         
+        # Plot the rating curve
         plt.plot(_zs, _Q, linewidth=4, color='.3', alpha=.5)
+        
+        # And set up the plot's display options
         plt.xlabel('Stage [m]', fontsize=14)
         plt.ylabel('Discharge [m$^3$ s$^{-1}$]', fontsize=14)
         plt.xlim((_xlim[0], _xlim[-1]))
