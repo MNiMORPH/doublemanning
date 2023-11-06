@@ -508,7 +508,6 @@ def main():
         plt.ylabel('Discharge [m$^3$ s$^{-1}$]', fontsize=14)
         plt.xlim((_xlim[0], _xlim[-1]))
         plt.ylim((_ylim[0], _ylim[-1]))
-        plt.tight_layout()
         
         # Plot ticks where Q=0 (depth = 0) and at bankfull
         _xlocs = [ flow_params['Stage at Q = 0 [m]'],
@@ -519,6 +518,8 @@ def main():
         _ymax = ( _ylim[-1] - _ylim[0] ) /50. + _ylim[0]
         plt.vlines( _xlocs, _ymin, _ymax, color='.8', linewidth=3 )
         
+        plt.tight_layout()
+
         if plot_save_path is not None:
             plt.savefig(plot_save_path)
         if display_plot_flag:
