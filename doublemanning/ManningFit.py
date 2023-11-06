@@ -464,18 +464,7 @@ def main():
         # Next, process stage and discharge to create a reasonable
         # array for plotting the data
 
-        # Obtain channel depth. Different forms depending on whether it was
-        # prescribed or solved for
-        try:
-            _h_beta = flow_params['Bank height [m]'][0]
-        except:
-            _h_beta = flow_params['Bank height [m]']
-        
-        # Compute bankfull stage -- no longer used
-        #_zsb = _h_beta + flow_params['Stage at Q = 0 [m]'][0]
-            
         # Create an array of stages for plotting
-        #_zs = np.arange(0., 2*_zsb, 0.01) # Fixed for now
         _zs = np.linspace(_xlim[0], _xlim[-1], 200)
 
         # Obtain _Q
