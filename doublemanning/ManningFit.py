@@ -489,12 +489,13 @@ def main():
             _Q = calib_manning_depth_width(slope, not use_depth)(_zs, *popt)
         
         # Do we show negative (nonphysical) rating-curve outcomes?
+        # Could also do this using stage_offset, but using Q feels intuitive
         if display_negative_rating_curve is False:
             _zs = _zs[_Q > 0]
             _Q = _Q[_Q > 0]
         
         # Plot the rating curve
-        plt.plot(_zs, _Q, linewidth=4, color='.3', alpha=.5)
+        plt.plot(_zs, _Q, linewidth=4, color='.3', alpha=.7)
         
         # And set up the plot's display options
         plt.xlabel('Stage [m]', fontsize=14)
@@ -502,6 +503,18 @@ def main():
         plt.xlim((_xlim[0], _xlim[-1]))
         plt.ylim((_ylim[0], _ylim[-1]))
         plt.tight_layout()
+        
+        print( flow_params['Bank height [m]'] )
+        print( flow_params['Stage at Q = 0 [m]'] )
+        
+        # Plot ticks where Q=0 (depth = 0) and at bankfull
+        _xlocs = [ flow_params['Stage at Q = 0 [m]'],
+                   flow_params['Bank height [m]'] + 
+                   flow_params['Stage at Q = 0 [m]']
+                 ]
+        _ymin = _ylim[0]
+        _ymax = ( _ylim[-1] - _ylim[0] ) /50. + _ylim[0]
+        plt.vlines( _xlocs, _ymin, _ymax, color='.8', linewidth=3 )
         
         if plot_save_path is not None:
             plt.savefig(plot_save_path)
