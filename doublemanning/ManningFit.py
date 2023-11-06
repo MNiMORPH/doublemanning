@@ -510,9 +510,6 @@ def main():
         plt.ylim((_ylim[0], _ylim[-1]))
         plt.tight_layout()
         
-        print( flow_params['Bank height [m]'] )
-        print( flow_params['Stage at Q = 0 [m]'] )
-        
         # Plot ticks where Q=0 (depth = 0) and at bankfull
         _xlocs = [ flow_params['Stage at Q = 0 [m]'],
                    flow_params['Bank height [m]'] + 
