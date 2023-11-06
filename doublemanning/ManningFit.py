@@ -334,14 +334,20 @@ def main():
     for i in range( len(flow_param_names) ):
         # First see if it was solved for
         try:
-            flow_params[flow_param_names[i]] = [popt[i]]
+            flow_params[flow_param_names[i]] = [popt[i]][0]
         # If not, see if it was a default-passed value
         # (This should always be the case for slope)
         except:
             if flow_param_names[i] == "Bank height [m]":
-                flow_params[flow_param_names[i]] = channel_depth
+                try:
+                    flow_params[flow_param_names[i]] = channel_depth[0]
+                except:
+                    flow_params[flow_param_names[i]] = channel_depth
             elif flow_param_names[i] == "Channel width [m]":
-                flow_params[flow_param_names[i]] = channel_width
+                try:
+                    flow_params[flow_param_names[i]] = channel_width[0]
+                except:
+                    flow_params[flow_param_names[i]] = channel_width
             elif flow_param_names[i] == "Channel slope":
                 flow_params[flow_param_names[i]] = slope
             else:
@@ -379,11 +385,11 @@ def main():
     use_depth_dict = { "Use flow depth instead of Rh": use_depth }
 
     if outfile is not None:
-        outarray = { **flow_params,
-                     **flow_param_SDs,
-                     **rmse_dict, 
-                     **use_depth_dict }
-        outparams = pd.DataFrame.from_dict(outarray)
+        outdict = { **flow_params,
+                    **flow_param_SDs,
+                    **rmse_dict, 
+                    **use_depth_dict }
+        outparams = pd.DataFrame(outdict, index=[0])
         outparams.to_csv(outfile, index=False)
 
     # Add a trailing blank line if we've been verbose
