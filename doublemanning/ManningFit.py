@@ -102,6 +102,7 @@ def main():
     # If nothing is passed, then print help and exit.
     args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
     
+    # Parse configuration file except for optimization bounds and plotting
     if args.configfile is not None:
         try:
             with open(args.configfile, "r") as yamlfile:
@@ -130,7 +131,6 @@ def main():
         
         # Output
         outfile = yconf['output']['outfile']
-        display_plot_flag = yconf['output']['plot']
         verboseflag = yconf['output']['verbose']
     else:
         # Data
@@ -144,9 +144,12 @@ def main():
         slope = args.slope
         use_depth = args.use_depth
         
+        # Plotting
+        display_plot_flag = args.plot
+        plot_save_path = None # No option here
+
         # Output
         outfile = args.outfile
-        plotflag = args.plot
         verboseflag = args.verbose
         
         # Indicate that there is no YAML file
@@ -392,7 +395,44 @@ def main():
     # PLOTTING #
     ############
 
-    if plotflag:
+    # Parse plotting options
+    # Possible only via YAML file -- too much to really do with simple
+    # CLI parsing
+    if yconf is not None:
+        display_plot_flag = yconf['plotting']['show']
+        try:
+            plot_save_path = yconf['plotting']['savepath']
+        except:
+            plot_save_path = None
+        try:
+            plot_xlim_stage_min = yconf['plotting']['stage_min']
+        except:
+            plot_xlim_stage_min = None
+        try:
+            plot_xlim_stage_max = yconf['plotting']['stage_max']
+        except:
+            plot_xlim_stage_max = None
+        try:
+            plot_ylim_discharge_min = yconf['plotting']['discharge_min']
+        except:
+            plot_ylim_discharge_min = None
+        try:
+            plot_ylim_discharge_max = yconf['plotting']['discharge_max']
+        except:
+            plot_ylim_discharge_max = None
+    # Otherwise, set the yaml-generated variables to None
+    # to ensure that the code can still run
+    else:
+        plot_save_path = None
+        plot_xlim_stage_min = None
+        plot_xlim_stage_max = None
+        plot_ylim_discharge_min = None
+        plot_ylim_discharge_max = None
+
+
+    # Actually plotting now.
+    
+    if display_plot_flag or plot_save_path is not None:
         
         # Obtain channel depth. Different forms depending on whether it was
         # prescribed or solved for
@@ -439,7 +479,11 @@ def main():
         plt.xlim((_xlim[0], _xlim[-1]))
         plt.ylim((_ylim[0], _ylim[-1]))
         plt.tight_layout()
-        plt.show()
+        
+        if plot_save_path is not None:
+            plt.savefig(plot_save_path)
+        if display_plot_flag:
+            plt.show()
 
 
 
