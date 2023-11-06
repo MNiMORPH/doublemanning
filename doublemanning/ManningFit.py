@@ -304,8 +304,8 @@ def main():
         Q_predicted = calib_manning_depth_width( slope,
                                                      not use_depth ) \
                                                      ( data['Stage'], *popt)
-    print( Q_predicted - data['Discharge'] )
 
+    #print( Q_predicted - data['Discharge'] )
     # Maybe add this as a plotting option, eventually
     #plt.hist( Q_predicted - data['Discharge'] )
     #plt.show()
@@ -449,8 +449,6 @@ def main():
 
         _xlim = list(plt.xlim())
         _ylim = list(plt.ylim())
-        
-        print( _xlim )
         
         if plot_xlim_stage_min:
             _xlim[0] = plot_xlim_stage_min
