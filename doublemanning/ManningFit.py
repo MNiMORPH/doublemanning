@@ -434,6 +434,28 @@ def main():
     
     if display_plot_flag or plot_save_path is not None:
         
+        # First, set up the data on the plot and use this to find the
+        # suggested axis limits for the full data range
+        plt.figure(figsize=(6.472,4))
+        plt.plot(data['Stage'].to_list(), data['Discharge'].to_list(), 'k.')
+
+        _xlim = list(plt.xlim())
+        _ylim = list(plt.ylim())
+        
+        print( _xlim )
+        
+        if plot_xlim_stage_min:
+            _xlim[0] = plot_xlim_stage_min
+        if plot_xlim_stage_max:
+            _xlim[-1] = plot_xlim_stage_max
+        if plot_ylim_discharge_min:
+            _ylim[0] = plot_ylim_discharge_min
+        if plot_ylim_discharge_max:
+            _ylim[-1] = plot_ylim_discharge_max
+
+        # Next, process stage and discharge to create a reasonable
+        # array for plotting the data
+
         # Obtain channel depth. Different forms depending on whether it was
         # prescribed or solved for
         try:
@@ -441,11 +463,12 @@ def main():
         except:
             _h_beta = flow_params['Bank height [m]']
         
-        # Compute bankfull stage
-        _zsb = _h_beta + flow_params['Stage at Q = 0 [m]'][0]
+        # Compute bankfull stage -- no longer used
+        #_zsb = _h_beta + flow_params['Stage at Q = 0 [m]'][0]
             
         # Create an array of stages for plotting
-        _zs = np.arange(0., 2*_zsb, 0.01) # Fixed for now
+        #_zs = np.arange(0., 2*_zsb, 0.01) # Fixed for now
+        _zs = np.linspace(_xlim[0], _xlim[-1], 200) # Fixed for now
             
         # Obtain _Q
         if channel_width is not None and channel_depth is not None:
@@ -464,16 +487,8 @@ def main():
             _Q = calib_manning_depth_width(slope, not use_depth)(_zs, *popt)
         
         # Now plot
-        plt.figure(figsize=(6.472,4))
-        plt.plot(data['Stage'].to_list(), data['Discharge'].to_list(), 'k.')
+        
         plt.plot(_zs, _Q, linewidth=4, color='.3', alpha=.5)
-        
-        
-        
-        
-        _xlim = plt.xlim()
-        _ylim = plt.ylim()
-        #plt.plot(_h, makemanning(2*args.channelwidth, slope)(_h, *popt))
         plt.xlabel('Stage [m]', fontsize=14)
         plt.ylabel('Discharge [m$^3$ s$^{-1}$]', fontsize=14)
         plt.xlim((_xlim[0], _xlim[-1]))
