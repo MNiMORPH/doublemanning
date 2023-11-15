@@ -428,6 +428,20 @@ def main():
             plot_ylim_discharge_max = float( yconf['plotting']['discharge_max'])
         except:
             plot_ylim_discharge_max = None
+        # Flags for plot annotations
+        plot_stage_offset_hash_bottom = \
+                                yconf['plotting']['stage_offset_hash_bottom']
+        plot_stage_offset_hash_top = \
+                                yconf['plotting']['stage_offset_hash_top']
+        plot_stage_offset_dotted_line = \
+                                yconf['plotting']['stage_offset_dotted_line']
+        plot_bank_height_hash_bottom = \
+                                yconf['plotting']['bank_height_hash_bottom']
+        plot_bank_height_hash_top = \
+                                yconf['plotting']['bank_height_hash_top']
+        plot_bank_height_dotted_line = \
+                                yconf['plotting']['bank_height_dotted_line']
+
     # Otherwise, set the yaml-generated variables to None
     # to ensure that the code can still run
     else:
@@ -436,6 +450,12 @@ def main():
         plot_xlim_stage_max = None
         plot_ylim_discharge_min = None
         plot_ylim_discharge_max = None
+        plot_stage_offset_hash_bottom = True
+        plot_stage_offset_hash_top = False
+        plot_stage_offset_dotted_line = False
+        plot_bank_height_hash_bottom = False
+        plot_bank_height_hash_top = False
+        plot_bank_height_dotted_line = False
 
 
     # Actually plotting now.
@@ -496,14 +516,46 @@ def main():
         plt.xlim((_xlim[0], _xlim[-1]))
         plt.ylim((_ylim[0], _ylim[-1]))
         
-        # Plot ticks where Q=0 (depth = 0) and at bankfull
-        _xlocs = [ flow_params['Stage at Q = 0 [m]'],
-                   flow_params['Bank height [m]'] + 
-                   flow_params['Stage at Q = 0 [m]']
-                 ]
-        _ymin = _ylim[0]
-        _ymax = ( _ylim[-1] - _ylim[0] ) /50. + _ylim[0]
-        plt.vlines( _xlocs, _ymin, _ymax, color='.8', linewidth=3 )
+        # Plot hashes or lines where Q=0 (depth = 0) and at bankfull
+        if plot_stage_offset_hash_bottom:
+            _xlocs = [ flow_params['Stage at Q = 0 [m]' ] ]
+            _ymin = _ylim[0]
+            _ymax = ( _ylim[-1] - _ylim[0] ) /50. + _ylim[0]
+            plt.vlines( _xlocs, _ymin, _ymax, color='.8', linewidth=3,
+                        zorder=-10 )
+        if plot_stage_offset_hash_top:
+            _xlocs = [ flow_params['Stage at Q = 0 [m]' ] ]
+            _ymin = _ylim[-1] - ( _ylim[-1] - _ylim[0] ) /50.
+            _ymax = _ylim[-1]
+            plt.vlines( _xlocs, _ymin, _ymax, color='.8', linewidth=3,
+                        zorder=-10 )
+        if plot_stage_offset_dotted_line:
+            _xlocs = [ flow_params['Stage at Q = 0 [m]' ] ]
+            _ymin = _ylim[0]
+            _ymax = _ylim[-1]
+            plt.vlines( _xlocs, _ymin, _ymax, color='.8', linewidth=1,
+                          linestyles='dotted', zorder=-10 )
+        if plot_bank_height_hash_bottom:
+            _xlocs = [ flow_params['Bank height [m]'] + 
+                       flow_params['Stage at Q = 0 [m]'] ]
+            _ymin = _ylim[0]
+            _ymax = ( _ylim[-1] - _ylim[0] ) /50. + _ylim[0]
+            plt.vlines( _xlocs, _ymin, _ymax, color='.8', linewidth=3,
+                        zorder=-10 )
+        if plot_bank_height_hash_top:
+            _xlocs = [ flow_params['Bank height [m]'] + 
+                       flow_params['Stage at Q = 0 [m]'] ]
+            _ymin = _ylim[-1] - ( _ylim[-1] - _ylim[0] ) /50.
+            _ymax = _ylim[-1]
+            plt.vlines( _xlocs, _ymin, _ymax, color='.8', linewidth=3,
+                        zorder=-10 )
+        if plot_bank_height_dotted_line:
+            _xlocs = [ flow_params['Bank height [m]'] + 
+                       flow_params['Stage at Q = 0 [m]'] ]
+            _ymin = _ylim[0]
+            _ymax = _ylim[-1]
+            plt.vlines( _xlocs, _ymin, _ymax, color='.8', linewidth=1,
+                          linestyles='dotted', zorder=-10 )
         
         plt.tight_layout()
 
