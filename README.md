@@ -131,3 +131,134 @@ $$Q = \frac{b}{n_\mathrm{ch}} h R_h^{2/3} S^{1/2} + k_\mathrm{fp} \left(h - h_\b
 | $S$             | River-channel slope                                                                                    | &mdash;                                         |
 | $k_\mathrm{fp}$ | Floodplain-flow coefficient                                                                            | $\mathrm{m}^{3 - P_\mathrm{fp}} \text{ s}^{-1}$ |
 | $P_\mathrm{fp}$ | Floodplain-flow exponent                                                                               | &mdash;                                         |
+
+## Example
+
+Because playing a game is usually quicker and more fun than reading the rules, we provide data and a YAML configuration file for the [Minnesota River near Jordan, MN, USA](examples/MinnesotaJordan), USGS gauge [05330000](https://waterdata.usgs.gov/monitoring-location/05330000/). `config.yaml` is commented and hopefully self-documented well enough; please open an "Issue" if you need some clarification.
+
+### Running `doublemanning-fit`: obtaining the coefficients and plotting the result
+
+`cd` to the `examples/MinnesotaJordan` directory.
+
+```bash
+doublemanning-fit -y config.yaml
+```
+
+#### `config.yaml`
+
+This is the same `config.yaml` file [from the example](examples/MinnesotaJordan/config.yaml).
+
+```yaml
+river: Minnesota
+station: Jordan
+
+author: Andy Wickert
+
+data:
+    # Filename expected with columns "Q", "Stage"
+    filename: 'MinnesotaJordan.tsv'
+    # tab, space, or comma
+    delimiter: 'tab'
+    # If data set uses US cfs (Q) and feet (Stage), converts these to metric.
+    us-units: True
+
+channel:
+    # meters; if ommitted, will be solved for as a free variable
+    width: 100
+    # meters; if omitted, will be solved for as a free variable
+    # depth:
+    # unitless
+    slope: 1E-4
+    # Use depth instead of hydraulic radius for calculations. True/False.
+    use_depth: False
+
+bounds:
+    # Uncomment the following to set them different from the defaults
+    # They should be given in LOWER, UPPER
+    # Estimated from clast count: 0.365
+    # Range for mountain streams with gravel + few boulders: 0.03--0.05
+    mannings_n_bounds:
+        - 0.025
+        - 0.06
+    # Floodplain characteristics:
+    # * Approximately rectangular
+    # * 9 m wide (- channel = 6.5 m)
+    # * 0.8 m high above channel (so 1.6 total) -- but assume infinite
+    # * Manning's n for heavy timber or med-to-dense brush ~0.1
+    # k_fp = (B-b)/n * S^(1/2) = 17.9
+    #floodplain_coeff_bounds:
+    #    - 0
+    #    - 200
+    floodplain_exponent_bounds:
+        - 1
+        - 4
+    stage_offset_bounds:
+        # On Google Sheet, I have + 7 cm for 2020 onwards.
+        # And 10 cm from the start, to which this is now referenced
+        - -1
+        - 1
+    channel_depth_bounds:
+        - 4
+        - 10
+    #channel_width_bounds:
+    #    - 60
+    #    - 100
+
+plotting:
+    # If this is present, the plot will be saved.
+    # Format set by file extension.
+    # Path may be relative or absolute
+    savepath: 'MinnesotaRiver_Jordan.pdf'
+    # True/False Boolean flag
+    show: True
+    # Optional fixed plotting bounds
+    stage_min: -0.001
+    stage_max: 12
+    #discharge_min:
+    discharge_max: 3500
+    # Plot curve even if discharge is negative (nonphysical)
+    display_negative_rating_curve: False
+    # Markers and lines for stage offsets and bank heights
+    stage_offset_hash_bottom: False
+    stage_offset_hash_top: False
+    stage_offset_dotted_line: True
+    bank_height_hash_bottom: False
+    bank_height_hash_top: False
+    bank_height_dotted_line: True
+
+output:
+    # CSV output file name or full path
+    outfile: 'doublemanning_params_MinnesotaJordan.csv'
+    # True/False Boolean flag
+    verbose: True
+```
+
+#### Outputs from the double-Manning inversion
+
+`doublemanning-fit` outputs the following table displaying the parameter estimation.
+
+|Manning's n         |Floodplain discharge coefficient|Floodplain discharge exponent|Stage at Q = 0 [m] |Bank height [m]  |Channel width [m]|Channel slope|SD: Manning's n      |SD: Floodplain discharge coefficient|SD: Floodplain discharge exponent|SD: Stage at Q = 0 [m]|SD: Bank height [m]  |SD: Channel width [m]|SD: Channel slope|Fit RMSE [m^3/s]  |Use flow depth instead of Rh|
+|--------------------|--------------------------------|-----------------------------|-------------------|-----------------|-----------------|-------------|---------------------|------------------------------------|---------------------------------|----------------------|---------------------|---------------------|-----------------|------------------|----------------------------|
+|0.033831468015063926|138.36638842157538              |1.6166749803210574           |0.47064363991612973|5.797468642861781|100.0            |0.0001       |1.830532636088621e-13|163822.52280191344                  |4.139278869596877e-05            |4.002253904290435e-06 |9.715555430266482e-05|0                    |0                |44.612476854901466|False                       |
+
+In addition, `doublemanning-fit` with the provided `config.yaml` outputs a figure. Here, we have altered `config.yaml` from the version provided here in order to output a `svg` instead of a `pdf`.
+
+![A curved line fitting a set of stage&ndash;discharge data points for the Minnesota River near Jordan, MN, USA.](./documentation/figures/MinnesotaRiver_Jordan.svg)
+
+
+### Running `doublemanning-calc`: Obtaining stage or water depth from discharge (and vice versa)
+
+With the parameter-estimation CSV file in hand, you may next perform forward calculations to calculate either water depth (or river stage) from discharge, or compute discharge from river depth (or flow stage).
+
+```bash
+# First, let's find discharge based on a provided flow stage
+# In this case, let's try 7 meters, which corresponds to an overbank flood.
+>> doublemanning-calc -p doublemanning_params_MinnesotaJordan.csv -zQ 7
+633.0231625564036
+
+# Next, let's pass this discharge to recover our 7-meter stage.
+doublemanning-calc -p doublemanning_params_MinnesotaJordan.csv -Qz 633.0231625564036
+7.000000000000001
+
+# Yay!
+```
