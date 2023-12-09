@@ -33,7 +33,7 @@ setuptools.setup(
             'doublemanning-calc = doublemanning.cli:doubleManningCalc'
         ],
     },
-    keywords='fluvial geomorphology sediment transport landscape evolution',
+    keywords='river stage discharge rating curve',
     project_urls={
     },
 )
