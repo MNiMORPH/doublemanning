@@ -75,7 +75,7 @@ def main():
     parser = argparse.ArgumentParser(
         description='Pass channel and flow characteristics to obtain a ' +
         '"Double Manning" -- Manning\'s Equation (channel) ' +
-        ' + generic power-law (floodplain) stage--discharge ' +
+        ' + generic power-law (floodplain) stage--discharge -- ' +
         'relationship.')
 
     parser.add_argument('-y', '--configfile', type=str,
