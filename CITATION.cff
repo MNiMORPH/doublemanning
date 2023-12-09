@@ -4,8 +4,8 @@ authors:
 - family-names: "Wickert"
   given-names: "Andrew D."
   orcid: "https://orcid.org/0000-0002-9545-3365"
-title: "rating-curve-2x-manning"
-version: 0.0.0
+title: "doublemanning"
+version: 1.0.0-alpha
 doi: 10.5281/zenodo.7495274
-date-released: 2021-08-11
-url: "https://github.com/MNiMORPH/rating-curve-2x-manning"
+date-released: 2023-12-09
+url: "https://github.com/MNiMORPH/doublemanning"
