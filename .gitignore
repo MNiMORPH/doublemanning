@@ -131,3 +131,9 @@ dmypy.json
 # Linux temporary and swap files
 .~lock*#
 *.swp
+
+# Outputs from worked examples
+*.csv
+*.png
+*.pdf
+*.svg
