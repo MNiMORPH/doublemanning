@@ -46,18 +46,18 @@ $$Q = \frac{b}{n_\mathrm{ch}} h R_h^{2/3} S^{1/2} + k_\mathrm{fp} \left(h - h_\b
 
 ### Variables
 
-| **Variable**    | **Description**                                                                                        | **Units [SI]**                   |
-|-----------------|--------------------------------------------------------------------------------------------------------|----------------------------------|
-| $Q$             | Discharge                                                                                              | m$^3$ s$^{-1}$                   |
-| $b$             | Channel width                                                                                          | m                                |
-| $B$             | Valley-bottom width                                                                                    | m                                |
-| $B-b$           | Floodplain width                                                                                       | m                                |
-| $z_b$           | River-bed elevation (compared to an arbitrary datum)                                                   | m                                |
-| $z_s$           | River stage: water-surface elevation (compared to the same arbitrary datum)                            | m                                |
-| $h$             | Flow depth: $h = z_s - z_b$                                                                            | m                                |
-| $h_b$           | Channel-bank height                                                                                    | m                                |
-| $R_h$           | Hydraulic radius; for the assumed rectangular channel, $R_h = b \cdot h / (b + 2 (h \wedge h_\beta) )$ | m                                |
-| $n_\mathrm{ch}$ | Manning's roughness coefficient within the channel                                                     | m                                |
-| $S$             | River-channel slope                                                                                    | &mdash;                          |
-| $k_\mathrm{fp}$ | Floodplain-flow coefficient                                                                            | m$^{3 - P_\mathrm{fp}}$ s$^{-1}$ |
-| $P_\mathrm{fp}$ | Floodplain-flow exponent                                                                               | &mdash;                          |
+| **Variable**    | **Description**                                                                                        | **Units [SI]**                                  |
+|-----------------|--------------------------------------------------------------------------------------------------------|-------------------------------------------------|
+| $Q$             | Discharge                                                                                              | m$\mathrm{m}^3 \text{ s}^{-1}$                  |
+| $b$             | Channel width                                                                                          | m                                               |
+| $B$             | Valley-bottom width                                                                                    | m                                               |
+| $B-b$           | Floodplain width                                                                                       | m                                               |
+| $z_b$           | River-bed elevation (compared to an arbitrary datum)                                                   | m                                               |
+| $z_s$           | River stage: water-surface elevation (compared to the same arbitrary datum)                            | m                                               |
+| $h$             | Flow depth: $h = z_s - z_b$                                                                            | m                                               |
+| $h_b$           | Channel-bank height                                                                                    | m                                               |
+| $R_h$           | Hydraulic radius; for the assumed rectangular channel, $R_h = b \cdot h / (b + 2 (h \wedge h_\beta) )$ | m                                               |
+| $n_\mathrm{ch}$ | Manning's roughness coefficient within the channel                                                     | m                                               |
+| $S$             | River-channel slope                                                                                    | &mdash;                                         |
+| $k_\mathrm{fp}$ | Floodplain-flow coefficient                                                                            | $\mathrm{m}^{3 - P_\mathrm{fp}} \text{ s}^{-1}$ |
+| $P_\mathrm{fp}$ | Floodplain-flow exponent                                                                               | &mdash;                                         |
