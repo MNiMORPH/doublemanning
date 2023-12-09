@@ -102,7 +102,8 @@ def main():
     # If nothing is passed, then print help and exit.
     args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
     
-    # Parse configuration file except for optimization bounds and plotting
+    # Parse configuration file.
+    # Assign variables except those for optimization bounds and plotting.
     if args.configfile is not None:
         try:
             with open(args.configfile, "r") as yamlfile:
@@ -298,8 +299,8 @@ def main():
                                                 not use_depth ) \
                                                 ( data['Stage'], *popt)
     elif channel_depth is not None:
-        sys.exit("Not set up to calibrate an unknown channel width with a known "+
-                 "channel depth.")
+        sys.exit("Not set up to calibrate an unknown channel width with a "+
+                 "known channel depth.")
     else:
         Q_predicted = calib_manning_depth_width( slope,
                                                      not use_depth ) \
