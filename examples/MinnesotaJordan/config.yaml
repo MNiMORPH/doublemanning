@@ -1,0 +1,83 @@
+river: Minnesota
+station: Jordan
+
+author: Andy Wickert
+
+data:
+    # Filename expected with columns "Q", "Stage"
+    filename: 'MinnesotaJordan.tsv'
+    # tab, space, or comma
+    delimiter: 'tab'
+    # If data set uses US cfs (Q) and feet (Stage), converts these to metric.
+    us-units: True
+
+channel:
+    # meters; if ommitted, will be solved for as a free variable
+    width: 100
+    # meters; if omitted, will be solved for as a free variable
+    # depth:
+    # unitless
+    slope: 1E-4
+    # Use depth instead of hydraulic radius for calculations. True/False.
+    use_depth: False
+
+bounds:
+    # Uncomment the following to set them different from the defaults
+    # They should be given in LOWER, UPPER
+    # Estimated from clast count: 0.365
+    # Range for mountain streams with gravel + few boulders: 0.03--0.05
+    mannings_n_bounds:
+        - 0.025
+        - 0.06
+    # Floodplain characteristics:
+    # * Approximately rectangular
+    # * 9 m wide (- channel = 6.5 m)
+    # * 0.8 m high above channel (so 1.6 total) -- but assume infinite
+    # * Manning's n for heavy timber or med-to-dense brush ~0.1
+    # k_fp = (B-b)/n * S^(1/2) = 17.9
+    #floodplain_coeff_bounds:
+    #    - 0
+    #    - 200
+    floodplain_exponent_bounds:
+        - 1
+        - 4
+    stage_offset_bounds:
+        # On Google Sheet, I have + 7 cm for 2020 onwards.
+        # And 10 cm from the start, to which this is now referenced
+        - -1
+        - 1
+    channel_depth_bounds:
+        - 4
+        - 10
+    #channel_width_bounds:
+    #    - 60
+    #    - 100
+
+plotting:
+    # If this is present, the plot will be saved.
+    # Format set by file extension.
+    # Path may be relative or absolute
+    savepath: 'MinnesotaRiver_Jordan.pdf'
+    # True/False Boolean flag
+    show: True
+    # Optional fixed plotting bounds
+    stage_min: -0.001
+    stage_max: 12
+    #discharge_min: 
+    discharge_max: 3500
+    # Plot curve even if discharge is negative (nonphysical)
+    display_negative_rating_curve: False
+    # Markers and lines for stage offsets and bank heights
+    stage_offset_hash_bottom: False
+    stage_offset_hash_top: False
+    stage_offset_dotted_line: True
+    bank_height_hash_bottom: False
+    bank_height_hash_top: False
+    bank_height_dotted_line: True
+
+output:
+    # CSV output file name or full path
+    outfile: 'doublemanning_params_MinnesotaJordan.csv'
+    # True/False Boolean flag
+    verbose: True
+
