@@ -18,6 +18,7 @@ setuptools.setup(
         'scipy',
         'matplotlib',
         'scikit-learn',
+        'yaml',
         ],
     packages=setuptools.find_packages(),
     classifiers=[
