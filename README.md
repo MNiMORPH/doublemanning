@@ -274,6 +274,6 @@ Funding for this project comes from:
 * The Alexander von Humboldt-Stiftung through a [Humboldt-Forschungsstipendium](https://www.humboldt-foundation.de/en/apply/sponsorship-programmes/humboldt-research-fellowship) provided to A. Wickert.
 * The U.S. National Science foundation via Award [1944782: CAREER: Alluvial river dynamics through watershed networks] to A. Wickert.
 
-<img src="./documentation/funding/AvH_Logo_Support_RGB.svg" alt="Unterstützt von der Alexander von Humboldt Stiftung." width="480px">
+<img src="./documentation/funding/AvH_Logo_Support_RGB.svg" alt="Unterstützt von der Alexander von Humboldt Stiftung." width="360px">
 <br/>
-<img src="./documentation/funding/logo-NSF.svg" alt="Supported by the U.S. National Science Foundation." width="480px">
+<img src="./documentation/funding/logo-NSF.svg" alt="Supported by the U.S. National Science Foundation." width="360px">
