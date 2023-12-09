@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/388610692.svg)](https://zenodo.org/badge/latestdoi/388610692)
 
-# rating-curve-2x-manning
+# doublemanning
 
 ## Package contents
 
