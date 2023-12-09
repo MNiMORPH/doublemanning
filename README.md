@@ -245,6 +245,7 @@ In addition, `doublemanning-fit` with the provided `config.yaml` outputs a figur
 
 ![A curved line fitting a set of stage&ndash;discharge data points for the Minnesota River near Jordan, MN, USA.](./documentation/figures/MinnesotaRiver_Jordan.svg)
 
+Here, the data points are in black and the double-Manning rating curve is in thick, solid, gray. The thin vertical dotted gray lines represent (left) the stage at which discharge = 0, corresponding to the river bed in the approximately rectangular channel ($z_b$), and (right) the stage at which flow enters the floodplain, $z_s = z_b + z_\beta$.
 
 ### Running `doublemanning-calc`: Obtaining stage or water depth from discharge (and vice versa)
 
