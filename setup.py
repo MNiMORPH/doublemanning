@@ -35,6 +35,5 @@ setuptools.setup(
     },
     keywords='fluvial geomorphology sediment transport landscape evolution',
     project_urls={
-        'Model page': 'https://csdms.colorado.edu/wiki/Model:GRLP',
     },
 )
