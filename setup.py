@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="Double-Manning",
-    version="0.0.0-dev",
+    name="doublemanning",
+    version="1.0.0-alpha",
     author="Andrew D. Wickert",
     author_email="awickert@umn.edu",
     description="Stage-discharge relationships: double-Manning approach",
