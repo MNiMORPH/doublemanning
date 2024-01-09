@@ -127,7 +127,7 @@ $$Q = \frac{b}{n_\mathrm{ch}} h R_h^{2/3} S^{1/2} + k_\mathrm{fp} \left(h - h_\b
 | $h$             | Flow depth: $h = z_s - z_b$                                                                            | m                                               |
 | $h_b$           | Channel-bank height                                                                                    | m                                               |
 | $R_h$           | Hydraulic radius; for the assumed rectangular channel, $R_h = b \cdot h / (b + 2 (h \wedge h_\beta) )$ | m                                               |
-| $n_\mathrm{ch}$ | Manning's roughness coefficient within the channel                                                     | m                                               |
+| $n_\mathrm{ch}$ | Manning's roughness coefficient within the channel                                                     | $\mathrm{s} \text{ m}^{-1/3}$                    |
 | $S$             | River-channel slope                                                                                    | &mdash;                                         |
 | $k_\mathrm{fp}$ | Floodplain-flow coefficient                                                                            | $\mathrm{m}^{3 - P_\mathrm{fp}} \text{ s}^{-1}$ |
 | $P_\mathrm{fp}$ | Floodplain-flow exponent                                                                               | &mdash;                                         |
