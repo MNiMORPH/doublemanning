@@ -118,7 +118,7 @@ $$Q = \frac{b}{n_\mathrm{ch}} h R_h^{2/3} S^{1/2} + k_\mathrm{fp} \left(h - h_\b
 
 | **Variable**    | **Description**                                                                                        | **Units [SI]**                                  |
 |-----------------|--------------------------------------------------------------------------------------------------------|-------------------------------------------------|
-| $Q$             | Discharge                                                                                              | m$\mathrm{m}^3 \text{ s}^{-1}$                  |
+| $Q$             | Discharge                                                                                              | $\mathrm{m}^3 \text{ s}^{-1}$                   |
 | $b$             | Channel width                                                                                          | m                                               |
 | $B$             | Valley-bottom width                                                                                    | m                                               |
 | $B-b$           | Floodplain width                                                                                       | m                                               |
