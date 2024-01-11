@@ -168,7 +168,8 @@ class ForwardModel( object ):
         (self.Q) shared across the class.
         """
         # flow depth
-        h = stage - self.stage_offset
+        # "stage" is taken to be a list. Therefore, using its only element
+        h = stage[0] - self.stage_offset
         # Does the flow go overbank?
         ob = h > self.h_bank
         if self.use_Rh:
