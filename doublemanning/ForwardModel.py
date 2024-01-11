@@ -154,10 +154,18 @@ class ForwardModel( object ):
         """
         self.set_parameters_from_DoubleManning_fit( paramfile )
 
+    #####################################
+    # Compute flow depth from discharge #
+    #####################################
+
     def _stage_from_discharge_rootfinder( self, stage ):
         """
         Returns a function whose root gives the river stage at the discharge
         set by the class variable self.Q
+        
+        The passed "stage" variable starts with an initial guess and then
+        is computed towards convergence using "fsolve", with discharge
+        (self.Q) shared across the class.
         """
         # flow depth
         h = stage - self.stage_offset
@@ -170,16 +178,17 @@ class ForwardModel( object ):
         return self.b/self.n * _r**(5/3.) * self.S**0.5 \
                   + ob*self.k*(h-self.h_bank)**(ob*self.P) - self.Q
 
-    #####################################
-    # Compute flow depth from discharge #
-    #####################################
-
     def depth_from_discharge(self, Q=None):
+        """
+        Compute flow depth using an iterative approach held within
+        "_stage_from_discharge_rootfinder"
+        """
         if Q is not None:
             self.Q = Q
         if Q == 0:
             self.h = 0
         else:
+            # Hard-coded initial guess of stage = 1 m
             self.h = fsolve( self._stage_from_discharge_rootfinder, 1. )[0] \
                         - self.stage_offset
         return self.h
