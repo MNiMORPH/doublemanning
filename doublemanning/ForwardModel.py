@@ -189,8 +189,8 @@ class ForwardModel( object ):
         if Q == 0:
             self.h = 0
         else:
-            # Hard-coded initial guess of stage = 1 m
-            self.h = fsolve( self._stage_from_discharge_rootfinder, 1. )[0] \
+            # Hard-coded initial guess of stage = self.stage_offset + 1 m
+            self.h = fsolve( self._stage_from_discharge_rootfinder, self.stage_offset+1. )[0] \
                         - self.stage_offset
         return self.h
 
