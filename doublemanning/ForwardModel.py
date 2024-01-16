@@ -190,7 +190,8 @@ class ForwardModel( object ):
             self.h = 0
         else:
             # Hard-coded initial guess of stage = self.stage_offset + 1 m
-            self.h = fsolve( self._stage_from_discharge_rootfinder, self.stage_offset+1. )[0] \
+            self.h = fsolve( self._stage_from_discharge_rootfinder,
+                              self.stage_offset+1. )[0] \
                         - self.stage_offset
         return self.h
 
